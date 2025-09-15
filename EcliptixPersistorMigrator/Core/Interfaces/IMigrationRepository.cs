@@ -14,13 +14,6 @@ public interface IMigrationRepository
     Task<OperationResult> RemoveMigrationFromJournalAsync(string migrationName, CancellationToken cancellationToken = default);
 }
 
-public interface ISeedRepository
-{
-    Task<IEnumerable<Seed>> GetAllSeedsAsync(CancellationToken cancellationToken = default);
-    Task<IEnumerable<Seed>> GetExecutedSeedsAsync(CancellationToken cancellationToken = default);
-    Task<IEnumerable<Seed>> GetPendingSeedsAsync(CancellationToken cancellationToken = default);
-    Task<OperationResult> MarkSeedAsExecutedAsync(Seed seed, CancellationToken cancellationToken = default);
-}
 
 public interface IDatabaseConnection
 {
@@ -34,13 +27,5 @@ public interface IDatabaseConnection
 public interface IMigrationEngine
 {
     Task<OperationResult> ExecuteMigrationAsync(Migration migration, ExecutionMode mode, CancellationToken cancellationToken = default);
-    Task<OperationResult> ExecuteSeedAsync(Seed seed, ExecutionMode mode, CancellationToken cancellationToken = default);
     Task<ValidationResult> ValidateMigrationAsync(Migration migration, CancellationToken cancellationToken = default);
-}
-
-public interface IBackupService
-{
-    Task<OperationResult> CreateBackupAsync(string backupName, CancellationToken cancellationToken = default);
-    Task<OperationResult> RestoreBackupAsync(string backupName, CancellationToken cancellationToken = default);
-    Task<IEnumerable<BackupInfo>> GetAvailableBackupsAsync(CancellationToken cancellationToken = default);
 }

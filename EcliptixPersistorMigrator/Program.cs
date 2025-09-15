@@ -27,9 +27,9 @@ internal static class Program
 
         try
         {
-            var host = CreateHost(args);
-            var runner = host.Services.GetRequiredService<CliRunner>();
-            var exitCode = await runner.RunAsync(args);
+            IHost host = CreateHost(args);
+            CliRunner runner = host.Services.GetRequiredService<CliRunner>();
+            int exitCode = await runner.RunAsync(args);
             return exitCode;
         }
         catch (Exception ex)
@@ -63,7 +63,7 @@ internal static class Program
 
     private static void ConfigureServices(IServiceCollection services, IConfiguration configuration)
     {
-        services.Configure<MigrationSettings>(configuration.GetSection(MigrationSettings.SectionName));
+        services.Configure<MigrationSettings>(configuration.GetSection(Constants.Configuration.MigrationSettings));
         services.Configure<AppSettings>(configuration);
 
         services.AddSingleton(provider =>
@@ -88,21 +88,6 @@ internal static class Program
     {
         services.AddTransient<MigrateCommand>();
         services.AddTransient<StatusCommand>();
-        services.AddTransient<RollbackCommand>();
-        services.AddTransient<SeedCommand>();
-        services.AddTransient<ValidateCommand>();
         services.AddTransient<TestCommand>();
-        services.AddTransient<RepairCommand>();
-        services.AddTransient<ListCommand>();
-        services.AddTransient<InfoCommand>();
-        services.AddTransient<ResetCommand>();
-        services.AddTransient<BackupCommand>();
-        services.AddTransient<RestoreCommand>();
-        services.AddTransient<HistoryCommand>();
-        services.AddTransient<PendingCommand>();
-        services.AddTransient<MarkCommand>();
-        services.AddTransient<GenerateCommand>();
-        services.AddTransient<DiffCommand>();
-        services.AddTransient<ExportCommand>();
     }
 }

@@ -33,13 +33,6 @@ public sealed record CommandResult
             ExitCode = exitCode
         };
 
-    public static CommandResult Warning(string message, Dictionary<string, object>? data = null)
-        => new()
-        {
-            Result = OperationResult.Warning,
-            Message = message,
-            Data = data ?? new()
-        };
 
     public static CommandResult NoChanges(string? message = null)
         => new()
@@ -60,22 +53,14 @@ public sealed record ValidationResult
     public static ValidationResult Invalid(params ValidationError[] errors)
         => new() { IsValid = false, Errors = errors.ToList() };
 
-    public static ValidationResult WithWarnings(params ValidationWarning[] warnings)
-        => new() { IsValid = true, Warnings = warnings.ToList() };
 }
 
 public sealed record ValidationError
 {
     public required string Message { get; init; }
-    public string? Code { get; init; }
-    public int? LineNumber { get; init; }
-    public string? SqlStatement { get; init; }
 }
 
 public sealed record ValidationWarning
 {
     public required string Message { get; init; }
-    public string? Code { get; init; }
-    public int? LineNumber { get; init; }
-    public string? SqlStatement { get; init; }
 }

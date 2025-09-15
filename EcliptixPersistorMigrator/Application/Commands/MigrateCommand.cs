@@ -12,18 +12,14 @@ public sealed class MigrateCommand : BaseCommand<MigrateOptions>
 {
     private readonly IMigrationRepository _migrationRepository;
     private readonly IMigrationEngine _migrationEngine;
-    private readonly IBackupService? _backupService;
-
     public MigrateCommand(
         IMigrationRepository migrationRepository,
         IMigrationEngine migrationEngine,
-        ILogger<MigrateCommand> logger,
-        IBackupService? backupService = null)
+        ILogger<MigrateCommand> logger)
         : base(logger)
     {
         _migrationRepository = migrationRepository ?? throw new ArgumentNullException(nameof(migrationRepository));
         _migrationEngine = migrationEngine ?? throw new ArgumentNullException(nameof(migrationEngine));
-        _backupService = backupService;
     }
 
     protected override async Task<CommandResult> ExecuteInternalAsync(CancellationToken cancellationToken)
@@ -32,17 +28,9 @@ public sealed class MigrateCommand : BaseCommand<MigrateOptions>
 
         ExecutionMode mode = Options.GetExecutionMode();
 
-        if (Options.CreateBackup && _backupService != null && mode != ExecutionMode.DryRun)
+        if (Options.CreateBackup)
         {
-            Logger.LogInformation("Creating backup before migration");
-            OperationResult backupResult = await _backupService.CreateBackupAsync(
-                $"pre-migration-{DateTime.UtcNow:yyyyMMdd-HHmmss}", cancellationToken);
-
-            if (backupResult != OperationResult.Success)
-            {
-                return CommandResult.Failure("Failed to create backup before migration",
-                    exitCode: Constants.ExitCodes.Error);
-            }
+            Logger.LogWarning("Backup functionality is not implemented yet");
         }
 
         IEnumerable<Migration> pendingMigrations = await _migrationRepository.GetPendingMigrationsAsync(cancellationToken);

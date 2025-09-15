@@ -32,26 +32,12 @@ public sealed class CliRunner
             int result = await Parser.Default.ParseArguments<
                 MigrateOptions,
                 StatusOptions,
-                RollbackOptions,
-                SeedOptions,
-                ValidateOptions,
-                TestOptions,
-                BackupOptions,
-                RestoreOptions,
-                ListOptions,
-                GenerateOptions
+                TestOptions
             >(args)
                 .MapResult(
                     (MigrateOptions opts) => ExecuteCommandAsync<MigrateOptions, MigrateCommand>(opts),
                     (StatusOptions opts) => ExecuteCommandAsync<StatusOptions, StatusCommand>(opts),
-                    (RollbackOptions opts) => ExecuteCommandAsync<RollbackOptions, RollbackCommand>(opts),
-                    (SeedOptions opts) => ExecuteCommandAsync<SeedOptions, SeedCommand>(opts),
-                    (ValidateOptions opts) => ExecuteCommandAsync<ValidateOptions, ValidateCommand>(opts),
                     (TestOptions opts) => ExecuteCommandAsync<TestOptions, TestCommand>(opts),
-                    (BackupOptions opts) => ExecuteCommandAsync<BackupOptions, BackupCommand>(opts),
-                    (RestoreOptions opts) => ExecuteCommandAsync<RestoreOptions, RestoreCommand>(opts),
-                    (ListOptions opts) => ExecuteCommandAsync<ListOptions, ListCommand>(opts),
-                    (GenerateOptions opts) => ExecuteCommandAsync<GenerateOptions, GenerateCommand>(opts),
                     errors => HandleParseErrorsAsync(errors)
                 );
 

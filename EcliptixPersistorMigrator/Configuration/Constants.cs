@@ -22,8 +22,6 @@ public static class Constants
     public static class Files
     {
         public const string AppSettingsFileName = "appsettings.json";
-        public const string MigrationTemplate = "V{0:D3}__{1}.sql";
-        public const string SeedTemplate = "S{0:D3}__{1}.sql";
     }
 
     public static class Logging
@@ -44,17 +42,13 @@ public static class Constants
 
     public static class Configuration
     {
-        public const string ConnectionStrings = "ConnectionStrings";
         public const string MigrationSettings = "MigrationSettings";
-        public const string Logging = "Logging";
     }
 
     public static class Numeric
     {
         public const int Zero = 0;
         public const int One = 1;
-        public const int Two = 2;
-        public const int MinusOne = -1;
         public const int DefaultTimeout = 30;
     }
 

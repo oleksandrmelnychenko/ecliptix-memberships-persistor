@@ -4,15 +4,11 @@ namespace EcliptixPersistorMigrator.Configuration;
 
 public sealed class AppSettings
 {
-    public const string SectionName = "AppSettings";
-
     [Required]
     public ConnectionStringsSettings ConnectionStrings { get; set; } = new();
 
     [Required]
     public MigrationSettings MigrationSettings { get; set; } = new();
-
-    public LoggingSettings Logging { get; set; } = new();
 }
 
 public sealed class ConnectionStringsSettings
@@ -23,8 +19,6 @@ public sealed class ConnectionStringsSettings
 
 public sealed class MigrationSettings
 {
-    public const string SectionName = "MigrationSettings";
-
     [Required]
     public string JournalTableName { get; set; } = Constants.Database.SchemaVersionsTable;
 
@@ -46,16 +40,3 @@ public sealed class MigrationSettings
     public string SeedFilePattern { get; set; } = Constants.MigrationPatterns.SeedPattern;
 }
 
-public sealed class LoggingSettings
-{
-    public const string SectionName = "Logging";
-
-    public LogLevelSettings LogLevel { get; set; } = new();
-}
-
-public sealed class LogLevelSettings
-{
-    public string Default { get; set; } = "Information";
-    public string Microsoft { get; set; } = "Warning";
-    public string System { get; set; } = "Warning";
-}

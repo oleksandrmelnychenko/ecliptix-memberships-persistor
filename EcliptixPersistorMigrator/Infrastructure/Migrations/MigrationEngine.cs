@@ -60,41 +60,6 @@ public sealed class MigrationEngine : IMigrationEngine
         }
     }
 
-    public async Task<OperationResult> ExecuteSeedAsync(Seed seed, ExecutionMode mode,
-        CancellationToken cancellationToken = default)
-    {
-        ArgumentNullException.ThrowIfNull(seed);
-
-        if (mode == ExecutionMode.DryRun)
-        {
-            _logger.LogInformation("DRY RUN: Would execute seed {SeedName}", seed.Name);
-            return OperationResult.Success;
-        }
-
-        try
-        {
-            Stopwatch stopwatch = Stopwatch.StartNew();
-            _logger.LogInformation("Executing seed {SeedName}", seed.Name);
-
-            await _databaseConnection.ExecuteInTransactionAsync(async transaction =>
-            {
-                await ExecuteSqlCommandAsync(seed.Content, cancellationToken);
-                await RecordSeedExecutionAsync(seed, stopwatch.Elapsed, cancellationToken);
-            }, cancellationToken: cancellationToken);
-
-            stopwatch.Stop();
-            _logger.LogInformation("Seed {SeedName} executed successfully in {ElapsedTime}ms",
-                seed.Name, stopwatch.ElapsedMilliseconds);
-
-            return OperationResult.Success;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Failed to execute seed {SeedName}: {Error}",
-                seed.Name, ex.Message);
-            return OperationResult.Failed;
-        }
-    }
 
     public async Task<ValidationResult> ValidateMigrationAsync(Migration migration,
         CancellationToken cancellationToken = default)
@@ -153,15 +118,6 @@ public sealed class MigrationEngine : IMigrationEngine
         }, cancellationToken);
     }
 
-    private async Task RecordSeedExecutionAsync(Seed seed, TimeSpan executionTime,
-        CancellationToken cancellationToken)
-    {
-        await _databaseConnection.ExecuteAsync(async () =>
-        {
-            _logger.LogDebug("Recording seed execution for {SeedName}", seed.Name);
-            await Task.CompletedTask;
-        }, cancellationToken);
-    }
 
     private async Task ValidateSqlSyntaxAsync(string sql, List<ValidationError> errors,
         List<ValidationWarning> warnings, CancellationToken cancellationToken)
