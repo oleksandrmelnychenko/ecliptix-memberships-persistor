@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("EcliptixPersistorMigrator")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+0829de31c5d739c2aa60349f993b38633500eb77")]
 [assembly: System.Reflection.AssemblyProductAttribute("EcliptixPersistorMigrator")]
 [assembly: System.Reflection.AssemblyTitleAttribute("EcliptixPersistorMigrator")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
