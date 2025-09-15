@@ -1,17 +1,13 @@
 # EcliptixPersistorMigrator
 
-A professional enterprise-grade database migration tool built with .NET 9.0, designed for SQL Server database schema management and data seeding operations.
+A professional enterprise-grade database migration tool built with .NET 9.0, designed for SQL Server database schema management operations.
 
 ## Features
 
 - **Database Migrations**: Apply versioned schema changes with validation
-- **Seed Data Management**: Manage reference data with dedicated seed operations
-- **Backup & Restore**: Create backups before migrations and restore when needed
-- **Migration Validation**: Validate scripts before execution with detailed error reporting
-- **Dry Run Mode**: Preview changes without executing them
-- **Rollback Support**: Rollback to specific migration versions
+- **Migration Status**: View current migration status with detailed reporting
 - **Connection Testing**: Verify database connectivity
-- **Status Reporting**: View current migration status with JSON output support
+- **Dry Run Mode**: Preview changes without executing them
 - **Transaction Safety**: All operations run within transactions for data integrity
 
 ## Quick Start
@@ -46,7 +42,7 @@ dotnet build
 
 ## Usage
 
-### Basic Commands
+### Available Commands
 
 #### Test Database Connection
 ```bash
@@ -63,21 +59,16 @@ dotnet run -- migrate
 dotnet run -- status
 ```
 
-#### List Available Migrations
-```bash
-dotnet run -- list
-```
-
-### Advanced Migration Operations
+### Migration Options
 
 #### Dry Run (Preview Changes)
 ```bash
-dotnet run -- migrate --dry-run
+dotnet run -- migrate --dryrun
 ```
 
 #### Migrate to Specific Version
 ```bash
-dotnet run -- migrate --target-version V005
+dotnet run -- migrate --target V005
 ```
 
 #### Force Migration (Skip Validation)
@@ -87,7 +78,7 @@ dotnet run -- migrate --force
 
 #### Create Backup Before Migration
 ```bash
-dotnet run -- migrate --create-backup
+dotnet run -- migrate --backup
 ```
 
 #### Verbose Output
@@ -95,114 +86,31 @@ dotnet run -- migrate --create-backup
 dotnet run -- migrate --verbose
 ```
 
-### Validation and Testing
+### Status Options
 
-#### Validate Migration Scripts
+#### Get Status in JSON Format
 ```bash
-dotnet run -- validate
+dotnet run -- status --json
 ```
 
-#### Validate Specific Version Range
+#### Verbose Status Output
 ```bash
-dotnet run -- validate --target-version V010
+dotnet run -- status --verbose
 ```
 
-### Backup and Restore Operations
-
-#### Create Database Backup
+### Connection String Override
 ```bash
-dotnet run -- backup --backup-name "pre-migration-backup"
-```
-
-#### Restore from Backup
-```bash
-dotnet run -- restore --backup-name "pre-migration-backup"
-```
-
-### Rollback Operations
-
-#### Rollback to Specific Version
-```bash
-dotnet run -- rollback --target-version V003
-```
-
-#### Rollback with Backup
-```bash
-dotnet run -- rollback --target-version V003 --create-backup
-```
-
-### Seed Data Management
-
-#### Apply Seed Data
-```bash
-dotnet run -- seed
-```
-
-#### Apply Specific Seed Version
-```bash
-dotnet run -- seed --target-version S002
-```
-
-### Status and Reporting
-
-#### Get Detailed Status (JSON Format)
-```bash
-dotnet run -- status --format json --verbose
-```
-
-#### Export Migration History
-```bash
-dotnet run -- export --output-path "./migration-report.json"
-```
-
-### Utility Commands
-
-#### Generate New Migration Template
-```bash
-dotnet run -- generate --name "AddUserTable"
-```
-
-#### Mark Migration as Executed (Manual)
-```bash
-dotnet run -- mark --version V005 --executed
-```
-
-#### Get Migration History
-```bash
-dotnet run -- history --limit 10
-```
-
-#### Show Pending Migrations
-```bash
-dotnet run -- pending
-```
-
-#### Show Database Info
-```bash
-dotnet run -- info
-```
-
-#### Repair Migration History
-```bash
-dotnet run -- repair
-```
-
-#### Show Differences
-```bash
-dotnet run -- diff --target-version V008
+dotnet run -- test --connectionstring "Server=myserver;Database=mydb;..."
+dotnet run -- migrate --connectionstring "Server=myserver;Database=mydb;..."
+dotnet run -- status --connectionstring "Server=myserver;Database=mydb;..."
 ```
 
 ## Migration File Structure
 
 ### Migration Files
-- Location: `Migrations/`
+- Location: `Migrations/` (embedded resources)
 - Naming: `V{version}__{description}.sql`
 - Example: `V001__CreateUserTable.sql`
-
-### Seed Files
-- Location: `Migrations/Seeds/`
-- Naming: `S{version}__{description}.sql`
-- Example: `S001__InitialUserRoles.sql`
 
 ## Configuration
 
@@ -213,18 +121,11 @@ dotnet run -- diff --target-version V008
     "EcliptixMemberships": "your-connection-string-here"
   },
   "MigrationSettings": {
-    "Schema": "dbo",
+    "JournalTableName": "SchemaVersions",
+    "JournalSchema": "dbo",
     "CommandTimeout": 30,
-    "TransactionTimeout": 300,
-    "BackupDirectory": "./backups",
-    "ValidateBeforeExecution": true,
-    "CreateBackupBeforeMigration": false
-  },
-  "Logging": {
-    "LogLevel": {
-      "Default": "Information",
-      "EcliptixPersistorMigrator": "Debug"
-    }
+    "TransactionPerScript": true,
+    "CreateSchemaVersionsTable": true
   }
 }
 ```
@@ -243,12 +144,12 @@ dotnet run -- diff --target-version V008
 ### Project Structure
 ```
 EcliptixPersistorMigrator/
-├── Application/Commands/     # Command implementations
+├── Application/Commands/     # Command implementations (Migrate, Status, Test)
 ├── Core/                    # Domain models and interfaces
 ├── Infrastructure/          # Database access and migration engine
 ├── Presentation/Cli/        # Command-line interface
 ├── Configuration/           # Constants and settings
-└── Migrations/             # SQL migration files
+└── Migrations/             # SQL migration files (embedded resources)
 ```
 
 ### Build and Test
@@ -264,27 +165,19 @@ dotnet build --configuration Release
 ```
 
 ### Adding New Migrations
-1. Create SQL file in `Migrations/` folder
+1. Create SQL file in `Migrations/` folder as embedded resource
 2. Follow naming convention: `V{next_version}__{description}.sql`
 3. Write your SQL schema changes
-4. Test with dry-run mode first
-
-### Adding Seed Data
-1. Create SQL file in `Migrations/Seeds/` folder
-2. Follow naming convention: `S{next_version}__{description}.sql`
-3. Write your INSERT/UPDATE statements
-4. Reference data should be idempotent
+4. Mark file as "Embedded Resource" in project settings
+5. Test with dry-run mode first
 
 ## Best Practices
 
-1. **Always test migrations** with `--dry-run` first
-2. **Create backups** before production migrations
-3. **Use transactions** for complex operations
-4. **Validate scripts** before execution
-5. **Keep migrations small** and focused
-6. **Use descriptive names** for migration files
-7. **Test rollback procedures** in development
-8. **Monitor execution times** for performance issues
+1. **Always test migrations** with `--dryrun` first
+2. **Use transactions** for complex operations
+3. **Keep migrations small** and focused
+4. **Use descriptive names** for migration files
+5. **Monitor execution times** for performance issues
 
 ## Troubleshooting
 
@@ -315,6 +208,7 @@ dotnet run -- --help
 # Command-specific help
 dotnet run -- migrate --help
 dotnet run -- status --help
+dotnet run -- test --help
 ```
 
 ## License
