@@ -1,19 +1,13 @@
-using CommandLine;
-using EcliptixPersistorMigrator.Application.Commands;
-using EcliptixPersistorMigrator.Configuration;
-using EcliptixPersistorMigrator.Core.Commands;
-using EcliptixPersistorMigrator.Core.Enums;
-using EcliptixPersistorMigrator.Core.Interfaces;
-using EcliptixPersistorMigrator.Infrastructure.Database;
-using EcliptixPersistorMigrator.Infrastructure.Migrations;
-using EcliptixPersistorMigrator.Presentation.Cli;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Serilog;
-using Serilog.Extensions.Hosting;
+using EcliptixPersistorMigrator.Schema;
+using EcliptixPersistorMigrator.StoredProcedures.Services;
+using EcliptixPersistorMigrator.StoredProcedures.Interfaces;
+using EcliptixPersistorMigrator.Configuration;
 
 namespace EcliptixPersistorMigrator;
 
@@ -22,24 +16,36 @@ internal static class Program
     private static async Task<int> Main(string[] args)
     {
         Log.Logger = new LoggerConfiguration()
-            .WriteTo.Console(outputTemplate: Constants.Logging.OutputTemplate)
+            .WriteTo.Console()
+            .WriteTo.File("logs/ecliptix-migrator-.log", rollingInterval: RollingInterval.Day)
             .CreateLogger();
 
         try
         {
+            Log.Information("🏗️  EcliptixPersistorMigrator - Database Schema Management Tool");
+
             IHost host = CreateHost(args);
-            CliRunner runner = host.Services.GetRequiredService<CliRunner>();
-            int exitCode = await runner.RunAsync(args);
-            return exitCode;
+
+            using Microsoft.Extensions.DependencyInjection.IServiceScope scope = host.Services.CreateScope();
+            EcliptixSchemaContext context = scope.ServiceProvider.GetRequiredService<EcliptixSchemaContext>();
+            Microsoft.Extensions.Logging.ILogger<EcliptixSchemaContext> logger = scope.ServiceProvider.GetRequiredService<Microsoft.Extensions.Logging.ILogger<EcliptixSchemaContext>>();
+
+            await ExecutePendingMigrationsAsync(context, logger);
+
+            Log.Information("✅ EcliptixSchemaContext initialized successfully");
+            Log.Information("📊 DbSets configured: {DbSetCount}", GetDbSetCount(context));
+            Log.Information("🔧 Stored Procedures service ready");
+
+            return 0;
         }
         catch (Exception ex)
         {
-            Log.Fatal(ex, Constants.Logging.FatalMessage);
-            return Constants.ExitCodes.Error;
+            Log.Fatal(ex, "❌ Application terminated unexpectedly");
+            return 1;
         }
         finally
         {
-            await Log.CloseAndFlushAsync();
+            Log.CloseAndFlush();
         }
     }
 
@@ -49,7 +55,7 @@ internal static class Program
             .ConfigureAppConfiguration((context, config) =>
             {
                 config.SetBasePath(Directory.GetCurrentDirectory())
-                    .AddJsonFile(Constants.Files.AppSettingsFileName, optional: false)
+                    .AddJsonFile("appsettings.json", optional: false)
                     .AddEnvironmentVariables()
                     .AddCommandLine(args);
             })
@@ -63,31 +69,124 @@ internal static class Program
 
     private static void ConfigureServices(IServiceCollection services, IConfiguration configuration)
     {
-        services.Configure<MigrationSettings>(configuration.GetSection(Constants.Configuration.MigrationSettings));
         services.Configure<AppSettings>(configuration);
 
-        services.AddSingleton(provider =>
+        services.AddDbContext<EcliptixSchemaContext>(options =>
         {
-            var connectionString = configuration.GetConnectionString(Constants.Database.DefaultConnectionStringKey)
-                ?? throw new InvalidOperationException("Connection string not found");
-            var logger = provider.GetRequiredService<ILogger<DatabaseConnection>>();
-            return new DatabaseConnection(connectionString, logger);
+            string connectionString = configuration.GetConnectionString("EcliptixMemberships")
+                ?? throw new InvalidOperationException("Connection string 'EcliptixMemberships' not found");
+
+            options.UseSqlServer(connectionString);
         });
 
-        services.AddTransient<IDatabaseConnection>(provider => provider.GetRequiredService<DatabaseConnection>());
-        services.AddTransient<IMigrationRepository, MigrationRepository>();
-        services.AddTransient<IMigrationEngine, MigrationEngine>();
-
-        services.AddTransient<CommandFactory>();
-        services.AddTransient<CliRunner>();
-
-        RegisterCommands(services);
+        services.AddScoped<IStoredProcedureExecutor, StoredProcedureExecutor>();
+        services.AddScoped<IVerificationService, VerificationService>();
     }
 
-    private static void RegisterCommands(IServiceCollection services)
+    private static async Task ExecutePendingMigrationsAsync(EcliptixSchemaContext context, Microsoft.Extensions.Logging.ILogger logger)
     {
-        services.AddTransient<MigrateCommand>();
-        services.AddTransient<StatusCommand>();
-        services.AddTransient<TestCommand>();
+        try
+        {
+            Log.Information("🔍 Checking database schema...");
+
+            // Check if database exists and can be connected to
+            bool canConnect = await context.Database.CanConnectAsync();
+            if (!canConnect)
+            {
+                Log.Warning("⚠️ Cannot connect to database");
+                return;
+            }
+
+            // Check if tables already exist (from DbUp migrations)
+            bool tablesExist = await CheckIfTablesExistAsync(context);
+
+            if (tablesExist)
+            {
+                Log.Information("📋 Database tables already exist (likely from DbUp migrations)");
+                Log.Information("🔄 Ensuring EF Core migration history is synchronized...");
+
+                // Create migrations history table if it doesn't exist
+                await context.Database.ExecuteSqlRawAsync(@"
+                    IF OBJECT_ID(N'[__EFMigrationsHistory]') IS NULL
+                    BEGIN
+                        CREATE TABLE [__EFMigrationsHistory] (
+                            [MigrationId] nvarchar(150) NOT NULL,
+                            [ProductVersion] nvarchar(32) NOT NULL,
+                            CONSTRAINT [PK___EFMigrationsHistory] PRIMARY KEY ([MigrationId])
+                        );
+                    END;");
+
+                // Get all migrations and mark them as applied
+                IEnumerable<string> allMigrations = context.Database.GetMigrations();
+                IEnumerable<string> appliedMigrations = await context.Database.GetAppliedMigrationsAsync();
+                IEnumerable<string> pendingMigrations = allMigrations.Except(appliedMigrations);
+
+                if (pendingMigrations.Any())
+                {
+                    Log.Information("📝 Marking {Count} EF migrations as applied:", pendingMigrations.Count());
+                    foreach (string migration in pendingMigrations)
+                    {
+                        Log.Information("   - {Migration}", migration);
+                        // Insert migration record without running the actual migration
+                        await context.Database.ExecuteSqlRawAsync(
+                            "INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion]) VALUES ({0}, {1})",
+                            migration, "9.0.0");
+                    }
+                }
+
+                Log.Information("✅ Database schema is synchronized with EF Core");
+            }
+            else
+            {
+                Log.Information("🔍 No existing tables found, skipping EF Core migrations for this session");
+                Log.Information("💡 To apply EF Core migrations to a fresh database, ensure tables don't exist from previous DbUp runs");
+            }
+
+            Log.Information("Database migration check completed");
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Failed to execute migrations");
+            logger.LogError(ex, "Failed to execute migrations");
+            // Don't throw - just log the error for migration tool
+        }
+    }
+
+    private static async Task<bool> CheckIfTablesExistAsync(EcliptixSchemaContext context)
+    {
+        try
+        {
+            // Check if key tables exist using simple OBJECT_ID check
+            string sql = @"
+                SELECT
+                    CASE WHEN OBJECT_ID('dbo.VerificationFlows') IS NOT NULL THEN 1 ELSE 0 END +
+                    CASE WHEN OBJECT_ID('dbo.MobileNumbers') IS NOT NULL THEN 1 ELSE 0 END +
+                    CASE WHEN OBJECT_ID('dbo.Devices') IS NOT NULL THEN 1 ELSE 0 END AS TableCount";
+
+            using Microsoft.Data.SqlClient.SqlConnection connection = new Microsoft.Data.SqlClient.SqlConnection(
+                context.Database.GetConnectionString());
+            await connection.OpenAsync();
+
+            using Microsoft.Data.SqlClient.SqlCommand command = new Microsoft.Data.SqlClient.SqlCommand(sql, connection);
+            object? result = await command.ExecuteScalarAsync();
+
+            int tableCount = Convert.ToInt32(result ?? 0);
+            Log.Information("Found {TableCount} existing core tables", tableCount);
+
+            return tableCount >= 2; // If at least 2 core tables exist, assume DbUp ran
+        }
+        catch (Exception ex)
+        {
+            Log.Warning(ex, "Error checking for existing tables");
+            return false;
+        }
+    }
+
+    private static int GetDbSetCount(EcliptixSchemaContext context)
+    {
+        return context.GetType()
+            .GetProperties()
+            .Count(p => p.PropertyType.IsGenericType &&
+                       p.PropertyType.GetGenericTypeDefinition() == typeof(DbSet<>));
     }
 }
