@@ -45,11 +45,9 @@ public class OtpCodeConfiguration : IEntityTypeConfiguration<OtpCode>
         builder.Property(e => e.UniqueId)
             .HasDefaultValueSql("NEWID()");
 
-        // Check constraints
         builder.ToTable(t => t.HasCheckConstraint("CHK_OtpCodes_Status",
             "Status IN ('active', 'used', 'expired', 'invalid')"));
 
-        // Indexes
         builder.HasIndex(e => e.UniqueId)
             .IsUnique()
             .HasDatabaseName("UQ_OtpCodes_UniqueId");
@@ -70,7 +68,6 @@ public class OtpCodeConfiguration : IEntityTypeConfiguration<OtpCode>
             .HasFilter("IsDeleted = 0")
             .HasDatabaseName("IX_OtpCodes_CreatedAt");
 
-        // Foreign Key Relationships
         builder.HasOne(e => e.VerificationFlow)
             .WithMany(v => v.OtpCodes)
             .HasForeignKey(e => e.VerificationFlowId)

@@ -57,7 +57,6 @@ public class EventLogConfiguration : IEntityTypeConfiguration<EventLog>
         builder.Property(e => e.UniqueId)
             .HasDefaultValueSql("NEWID()");
 
-        // Indexes
         builder.HasIndex(e => e.UniqueId)
             .IsUnique()
             .HasDatabaseName("UQ_EventLogs_UniqueId");

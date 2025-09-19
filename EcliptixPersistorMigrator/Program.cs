@@ -89,7 +89,6 @@ internal static class Program
         {
             Log.Information("🔍 Checking database schema...");
 
-            // Check if database exists and can be connected to
             bool canConnect = await context.Database.CanConnectAsync();
             if (!canConnect)
             {
@@ -97,7 +96,6 @@ internal static class Program
                 return;
             }
 
-            // Check if tables already exist (from DbUp migrations)
             bool tablesExist = await CheckIfTablesExistAsync(context);
 
             if (tablesExist)
@@ -105,7 +103,6 @@ internal static class Program
                 Log.Information("📋 Database tables already exist (likely from DbUp migrations)");
                 Log.Information("🔄 Ensuring EF Core migration history is synchronized...");
 
-                // Create migrations history table if it doesn't exist
                 await context.Database.ExecuteSqlRawAsync(@"
                     IF OBJECT_ID(N'[__EFMigrationsHistory]') IS NULL
                     BEGIN
@@ -116,7 +113,6 @@ internal static class Program
                         );
                     END;");
 
-                // Get all migrations and mark them as applied
                 IEnumerable<string> allMigrations = context.Database.GetMigrations();
                 IEnumerable<string> appliedMigrations = await context.Database.GetAppliedMigrationsAsync();
                 IEnumerable<string> pendingMigrations = allMigrations.Except(appliedMigrations);
@@ -127,7 +123,6 @@ internal static class Program
                     foreach (string migration in pendingMigrations)
                     {
                         Log.Information("   - {Migration}", migration);
-                        // Insert migration record without running the actual migration
                         await context.Database.ExecuteSqlRawAsync(
                             "INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion]) VALUES ({0}, {1})",
                             migration, "9.0.0");
@@ -148,7 +143,6 @@ internal static class Program
         {
             Log.Error(ex, "Failed to execute migrations");
             logger.LogError(ex, "Failed to execute migrations");
-            // Don't throw - just log the error for migration tool
         }
     }
 
@@ -156,7 +150,6 @@ internal static class Program
     {
         try
         {
-            // Check if key tables exist using simple OBJECT_ID check
             string sql = @"
                 SELECT
                     CASE WHEN OBJECT_ID('dbo.VerificationFlows') IS NOT NULL THEN 1 ELSE 0 END +
@@ -173,7 +166,7 @@ internal static class Program
             int tableCount = Convert.ToInt32(result ?? 0);
             Log.Information("Found {TableCount} existing core tables", tableCount);
 
-            return tableCount >= 2; // If at least 2 core tables exist, assume DbUp ran
+            return tableCount >= 2;
         }
         catch (Exception ex)
         {

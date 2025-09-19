@@ -39,8 +39,6 @@ public class EcliptixSchemaContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        // Configuration is handled in Program.cs and EcliptixSchemaContextFactory
-        // This method is kept for compatibility but shouldn't be used in production
         if (!optionsBuilder.IsConfigured)
         {
             throw new InvalidOperationException(

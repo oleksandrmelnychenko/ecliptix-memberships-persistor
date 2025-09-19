@@ -50,7 +50,6 @@ public class MembershipAttemptConfiguration : IEntityTypeConfiguration<Membershi
         builder.Property(e => e.UniqueId)
             .HasDefaultValueSql("NEWID()");
 
-        // Indexes
         builder.HasIndex(e => e.UniqueId)
             .IsUnique()
             .HasDatabaseName("UQ_MembershipAttempts_UniqueId");
@@ -71,7 +70,6 @@ public class MembershipAttemptConfiguration : IEntityTypeConfiguration<Membershi
             .HasFilter("IsDeleted = 0 AND IpAddress IS NOT NULL")
             .HasDatabaseName("IX_MembershipAttempts_IpAddress");
 
-        // Foreign Key Relationships
         builder.HasOne(e => e.Membership)
             .WithMany(m => m.MembershipAttempts)
             .HasForeignKey(e => e.MembershipId)

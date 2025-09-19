@@ -49,14 +49,12 @@ public class VerificationFlowConfiguration : IEntityTypeConfiguration<Verificati
         builder.Property(e => e.UniqueId)
             .HasDefaultValueSql("NEWID()");
 
-        // Check constraints
         builder.ToTable(t => t.HasCheckConstraint("CHK_VerificationFlows_Status",
             "Status IN ('pending', 'verified', 'expired', 'failed')"));
 
         builder.ToTable(t => t.HasCheckConstraint("CHK_VerificationFlows_Purpose",
             "Purpose IN ('unspecified', 'registration', 'login', 'password_recovery', 'update_phone')"));
 
-        // Indexes
         builder.HasIndex(e => e.UniqueId)
             .IsUnique()
             .HasDatabaseName("UQ_VerificationFlows_UniqueId");
@@ -75,7 +73,6 @@ public class VerificationFlowConfiguration : IEntityTypeConfiguration<Verificati
             .HasFilter("IsDeleted = 0")
             .HasDatabaseName("IX_VerificationFlows_ExpiresAt");
 
-        // Foreign Key Relationships
         builder.HasOne(e => e.PhoneNumber)
             .WithMany(p => p.VerificationFlows)
             .HasForeignKey(e => e.PhoneNumberId)

@@ -47,7 +47,6 @@ public class FailedOtpAttemptConfiguration : IEntityTypeConfiguration<FailedOtpA
         builder.Property(e => e.UniqueId)
             .HasDefaultValueSql("NEWID()");
 
-        // Indexes
         builder.HasIndex(e => e.UniqueId)
             .IsUnique()
             .HasDatabaseName("UQ_FailedOtpAttempts_UniqueId");
@@ -64,7 +63,6 @@ public class FailedOtpAttemptConfiguration : IEntityTypeConfiguration<FailedOtpA
             .HasFilter("IsDeleted = 0 AND IpAddress IS NOT NULL")
             .HasDatabaseName("IX_FailedOtpAttempts_IpAddress");
 
-        // Foreign Key Relationships
         builder.HasOne(e => e.OtpRecord)
             .WithMany(o => o.FailedAttempts)
             .HasForeignKey(e => e.OtpRecordId)

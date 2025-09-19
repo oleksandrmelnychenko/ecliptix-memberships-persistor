@@ -47,14 +47,12 @@ public class MembershipConfiguration : IEntityTypeConfiguration<Membership>
         builder.Property(e => e.UniqueId)
             .HasDefaultValueSql("NEWID()");
 
-        // Check constraints
         builder.ToTable(t => t.HasCheckConstraint("CHK_Memberships_Status",
             "Status IN ('active', 'inactive')"));
 
         builder.ToTable(t => t.HasCheckConstraint("CHK_Memberships_CreationStatus",
             "CreationStatus IN ('otp_verified', 'secure_key_set', 'passphrase_set')"));
 
-        // Indexes
         builder.HasIndex(e => e.UniqueId)
             .IsUnique()
             .HasDatabaseName("UQ_Memberships_UniqueId");
@@ -73,7 +71,6 @@ public class MembershipConfiguration : IEntityTypeConfiguration<Membership>
             .HasFilter("IsDeleted = 0")
             .HasDatabaseName("IX_Memberships_Status");
 
-        // Foreign Key Relationships
         builder.HasOne(e => e.PhoneNumber)
             .WithMany(p => p.Memberships)
             .HasForeignKey(e => e.PhoneNumberId)

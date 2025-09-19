@@ -49,7 +49,6 @@ public class LoginAttemptConfiguration : IEntityTypeConfiguration<LoginAttempt>
         builder.Property(e => e.UniqueId)
             .HasDefaultValueSql("NEWID()");
 
-        // Indexes
         builder.HasIndex(e => e.UniqueId)
             .IsUnique()
             .HasDatabaseName("UQ_LoginAttempts_UniqueId");
@@ -74,7 +73,6 @@ public class LoginAttemptConfiguration : IEntityTypeConfiguration<LoginAttempt>
             .HasFilter("IsDeleted = 0 AND SessionId IS NOT NULL")
             .HasDatabaseName("IX_LoginAttempts_SessionId");
 
-        // Foreign Key Relationships
         builder.HasOne(e => e.Membership)
             .WithMany(m => m.LoginAttempts)
             .HasForeignKey(e => e.MembershipId)

@@ -40,7 +40,6 @@ public class MobileDeviceConfiguration : IEntityTypeConfiguration<MobileDevice>
         builder.Property(e => e.UniqueId)
             .HasDefaultValueSql("NEWID()");
 
-        // Indexes
         builder.HasIndex(e => e.UniqueId)
             .IsUnique()
             .HasDatabaseName("UQ_MobileDevices_UniqueId");
@@ -64,7 +63,6 @@ public class MobileDeviceConfiguration : IEntityTypeConfiguration<MobileDevice>
             .HasFilter("IsDeleted = 0 AND LastUsedAt IS NOT NULL")
             .HasDatabaseName("IX_MobileDevices_LastUsedAt");
 
-        // Foreign Key Relationships
         builder.HasOne(e => e.PhoneNumber)
             .WithMany(p => p.MobileDevices)
             .HasForeignKey(e => e.PhoneNumberId)
