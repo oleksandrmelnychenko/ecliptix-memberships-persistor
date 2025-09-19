@@ -22,7 +22,7 @@ internal static class Program
 
         try
         {
-            Log.Information("🏗️  EcliptixPersistorMigrator - Database Schema Management Tool");
+            Log.Information("🏗️  Ecliptix.Memberships.Persistor - Database Schema Management Tool");
 
             IHost host = CreateHost(args);
 

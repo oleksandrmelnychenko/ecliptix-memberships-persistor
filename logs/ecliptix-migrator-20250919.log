@@ -1,0 +1,12 @@
+2025-09-19 19:33:59.242 +03:00 [INF] 🏗️  EcliptixPersistorMigrator - Database Schema Management Tool
+2025-09-19 19:33:59.391 +03:00 [FTL] ❌ Application terminated unexpectedly
+System.IO.FileNotFoundException: The configuration file 'appsettings.json' was not found and is not optional. The expected physical path was '/Users/oleksandrmelnychenko/RiderProjects/Ecliptix.Memberships.Persistor/appsettings.json'.
+   at Microsoft.Extensions.Configuration.FileConfigurationProvider.HandleException(ExceptionDispatchInfo info)
+   at Microsoft.Extensions.Configuration.FileConfigurationProvider.Load(Boolean reload)
+   at Microsoft.Extensions.Configuration.FileConfigurationProvider.Load()
+   at Microsoft.Extensions.Configuration.ConfigurationRoot..ctor(IList`1 providers)
+   at Microsoft.Extensions.Configuration.ConfigurationBuilder.Build()
+   at Microsoft.Extensions.Hosting.HostBuilder.InitializeAppConfiguration()
+   at Microsoft.Extensions.Hosting.HostBuilder.Build()
+   at Ecliptix.Memberships.Persistor.Program.CreateHost(String[] args) in /Users/oleksandrmelnychenko/RiderProjects/Ecliptix.Memberships.Persistor/Ecliptix.Memberships.Persistor/Program.cs:line 54
+   at Ecliptix.Memberships.Persistor.Program.Main(String[] args) in /Users/oleksandrmelnychenko/RiderProjects/Ecliptix.Memberships.Persistor/Ecliptix.Memberships.Persistor/Program.cs:line 27
