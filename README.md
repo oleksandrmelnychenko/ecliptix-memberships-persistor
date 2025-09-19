@@ -1,6 +1,6 @@
-# EcliptixPersistorMigrator
+# Ecliptix.Memberships.Persistor
 
-A professional enterprise-grade database migration tool built with .NET 9.0, designed for SQL Server database schema management operations.
+A professional enterprise-grade database migration tool built with .NET 9.0, designed for SQL Server database schema management operations for the Ecliptix Memberships system.
 
 ## Features
 
@@ -22,8 +22,8 @@ A professional enterprise-grade database migration tool built with .NET 9.0, des
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/oleksandrmelnychenko/ecliptix-db-migrator.git
-cd ecliptix-db-migrator
+git clone https://github.com/oleksandrmelnychenko/ecliptix-memberships-persistor.git
+cd ecliptix-memberships-persistor
 ```
 
 2. Build the project:
@@ -143,13 +143,13 @@ dotnet run -- status --connectionstring "Server=myserver;Database=mydb;..."
 
 ### Project Structure
 ```
-EcliptixPersistorMigrator/
-├── Application/Commands/     # Command implementations (Migrate, Status, Test)
-├── Core/                    # Domain models and interfaces
-├── Infrastructure/          # Database access and migration engine
-├── Presentation/Cli/        # Command-line interface
-├── Configuration/           # Constants and settings
-└── Migrations/             # SQL migration files (embedded resources)
+Ecliptix.Memberships.Persistor/
+├── Schema/Entities/         # Entity Framework entity models
+├── Schema/Configurations/   # EF Core fluent API configurations
+├── StoredProcedures/       # Stored procedure services and scripts
+├── Configuration/          # Application settings and constants
+├── Migrations/            # EF Core migrations
+└── Program.cs             # Main entry point with Serilog logging
 ```
 
 ### Build and Test

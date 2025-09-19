@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-EcliptixPersistorMigrator is a .NET 9.0 CLI database migration tool that replaces problematic MasterDeployment.sql scripts with versioned, transactional migrations. The tool provides clean migration management for the Ecliptix database with smart schema detection and upgrade capabilities.
+Ecliptix.Memberships.Persistor is a .NET 9.0 CLI database migration tool that replaces problematic MasterDeployment.sql scripts with versioned, transactional migrations. The tool provides clean migration management for the Ecliptix Memberships database with smart schema detection and upgrade capabilities.
 
 ## Commands
 
