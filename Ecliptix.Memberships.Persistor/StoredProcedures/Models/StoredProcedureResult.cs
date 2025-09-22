@@ -1,3 +1,5 @@
+using Ecliptix.Memberships.Persistor.StoredProcedures.Models.Enums;
+
 namespace Ecliptix.Memberships.Persistor.StoredProcedures.Models;
 
 public class StoredProcedureResult<T>
@@ -61,4 +63,11 @@ public class OtpVerificationData
     public bool IsValid { get; set; }
     public DateTime? VerifiedAt { get; set; }
     public int RemainingAttempts { get; set; }
+}
+
+public class CreateMembershipData
+{
+    public Guid MembershipUniqueId { get; set; }
+    public string Status { get; set; } = string.Empty;
+    public string CreationStatus { get; set; } = string.Empty;
 }

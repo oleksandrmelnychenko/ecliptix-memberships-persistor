@@ -9,6 +9,9 @@
 USE [EcliptixMemberships];
 GO
 
+SET QUOTED_IDENTIFIER ON;
+GO
+
 SET NOCOUNT ON;
 SET XACT_ABORT ON;
 GO
@@ -41,7 +44,18 @@ GO
 GO
 
 -- ============================================================================
--- 3. VERIFICATION PROCEDURES (Business logic)
+-- 3. MEMBERSHIP PROCEDURES (Business logic)
+-- ============================================================================
+
+-- SP_CreateMembership
+PRINT '👥 Deploying membership procedures...';
+GO
+
+:r Ecliptix.Memberships.Persistor/StoredProcedures/Scripts/Membership/SP_CreateMembership.sql
+GO
+
+-- ============================================================================
+-- 4. VERIFICATION PROCEDURES (Business logic)
 -- ============================================================================
 PRINT '🔐 Deploying verification procedures...';
 GO
@@ -59,7 +73,7 @@ GO
 GO
 
 -- ============================================================================
--- 4. VERIFICATION AND TESTING
+-- 5. VERIFICATION AND TESTING
 -- ============================================================================
 PRINT '✅ Verifying stored procedures deployment...';
 GO
@@ -82,6 +96,9 @@ IF OBJECT_ID('dbo.SP_GenerateOtpCode', 'P') IS NULL
 
 IF OBJECT_ID('dbo.SP_VerifyOtpCode', 'P') IS NULL
     RAISERROR('SP_VerifyOtpCode not found', 16, 1);
+
+IF OBJECT_ID('dbo.SP_CreateMembership', 'P') IS NULL
+    RAISERROR('SP_CreateMembership not found', 16, 1);
 
 PRINT '✅ All stored procedures deployed successfully!';
 

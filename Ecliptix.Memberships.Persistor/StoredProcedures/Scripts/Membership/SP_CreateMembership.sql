@@ -6,7 +6,7 @@
 -- Created: 2025-09-22
 -- ============================================================================
 
-CREATE OR ALTER PROCEDURE dbo.CreateMembership
+CREATE OR ALTER PROCEDURE dbo.SP_CreateMembership
     @FlowUniqueId UNIQUEIDENTIFIER,
     @ConnectionId BIGINT,
     @OtpUniqueId UNIQUEIDENTIFIER,
@@ -49,17 +49,25 @@ BEGIN
         -- 2. Rate limiting check
         SELECT
             @FailedAttempts = COUNT(*),
-            @EarliestFailedAttempt = MIN(Timestamp)
-        FROM dbo.MembershipAttempts
-        WHERE PhoneNumberId = @PhoneNumberId
-            AND IsSuccess = 0
-            AND Timestamp > DATEADD(hour, -@AttemptWindowHours, GETUTCDATE());
+            @EarliestFailedAttempt = MIN(ma.AttemptedAt)
+        FROM dbo.MembershipAttempts ma
+        INNER JOIN dbo.Memberships m ON ma.MembershipId = m.UniqueId
+        WHERE m.PhoneNumberId = @PhoneNumberId
+            AND ma.Status = 'failed'
+            AND ma.AttemptedAt > DATEADD(hour, -@AttemptWindowHours, GETUTCDATE())
+            AND ma.IsDeleted = 0
+            AND m.IsDeleted = 0;
 
         IF @FailedAttempts >= @MaxAttempts
         BEGIN
             SET @WaitMinutes = DATEDIFF(minute, GETUTCDATE(), DATEADD(hour, @AttemptWindowHours, @EarliestFailedAttempt));
             SET @Outcome = CAST(CASE WHEN @WaitMinutes < 0 THEN 0 ELSE @WaitMinutes END AS NVARCHAR(100));
-            EXEC dbo.LogMembershipAttempt @PhoneNumberId, @Outcome, 0;
+            -- Log attempt (rate limit exceeded)
+            INSERT INTO dbo.MembershipAttempts (MembershipId, AttemptType, Status, ErrorMessage, AttemptedAt, CreatedAt, UpdatedAt, IsDeleted)
+            SELECT TOP 1 m.UniqueId, 'create', 'failed', 'rate_limit_exceeded', GETUTCDATE(), GETUTCDATE(), GETUTCDATE(), 0
+            FROM dbo.Memberships m
+            WHERE m.PhoneNumberId = @PhoneNumberId AND m.IsDeleted = 0
+            ORDER BY m.CreatedAt DESC;
             SET @ErrorMessage = 'rate_limit_exceeded';
             ROLLBACK TRANSACTION;
             RETURN;
@@ -80,7 +88,16 @@ BEGIN
         IF @@ROWCOUNT = 0
         BEGIN
             SET @Outcome = 'verification_flow_not_found';
-            IF @PhoneNumberId IS NOT NULL EXEC dbo.LogMembershipAttempt @PhoneNumberId, @Outcome, 0;
+            -- Log attempt (verification flow not found)
+            IF @PhoneNumberId IS NOT NULL
+            BEGIN
+                INSERT INTO dbo.MembershipAttempts (MembershipId, AttemptType, Status, ErrorMessage, AttemptedAt, CreatedAt, UpdatedAt, IsDeleted)
+                SELECT TOP 1 m.UniqueId, 'create', 'failed', 'verification_flow_not_found', GETUTCDATE(), GETUTCDATE(), GETUTCDATE(), 0
+                FROM dbo.Memberships m
+                WHERE m.PhoneNumberId = @PhoneNumberId AND m.IsDeleted = 0
+                ORDER BY m.CreatedAt DESC;
+            END
+
             SET @ErrorMessage = 'verification_flow_not_found';
             ROLLBACK TRANSACTION;
             RETURN;
@@ -98,7 +115,15 @@ BEGIN
         IF @ExistingMembershipId IS NOT NULL
         BEGIN
             SET @Outcome = 'membership_already_exists';
-            EXEC dbo.LogMembershipAttempt @PhoneNumberId, @Outcome, 1;
+            -- Log attempt (success or already exists)
+            INSERT INTO dbo.MembershipAttempts (MembershipId, AttemptType, Status, ErrorMessage, AttemptedAt, CreatedAt, UpdatedAt, IsDeleted)
+            SELECT TOP 1 m.UniqueId, 'create', 
+                CASE WHEN @Outcome = 'created' THEN 'success' ELSE 'failed' END, 
+                @Outcome, GETUTCDATE(), GETUTCDATE(), GETUTCDATE(), 0
+            FROM dbo.Memberships m
+            WHERE m.PhoneNumberId = @PhoneNumberId AND m.IsDeleted = 0
+            ORDER BY m.CreatedAt DESC;
+
             SET @ResultCreationStatus = @ExistingCreationStatus;
             SET @ErrorMessage = NULL;
             ROLLBACK TRANSACTION;
@@ -116,9 +141,23 @@ BEGIN
         UPDATE dbo.OtpRecords SET IsActive = 0 WHERE UniqueId = @OtpUniqueId AND FlowUniqueId = @FlowUniqueId;
 
         SET @Outcome = 'created';
-        EXEC dbo.LogMembershipAttempt @PhoneNumberId, @Outcome, 1;
+        -- Log attempt (success or already exists)
+        INSERT INTO dbo.MembershipAttempts (MembershipId, AttemptType, Status, ErrorMessage, AttemptedAt, CreatedAt, UpdatedAt, IsDeleted)
+        SELECT TOP 1 m.UniqueId, 'create', 
+            CASE WHEN @Outcome = 'created' THEN 'success' ELSE 'failed' END, 
+            @Outcome, GETUTCDATE(), GETUTCDATE(), GETUTCDATE(), 0
+        FROM dbo.Memberships m
+        WHERE m.PhoneNumberId = @PhoneNumberId AND m.IsDeleted = 0
+        ORDER BY m.CreatedAt DESC;
 
-        DELETE FROM dbo.MembershipAttempts WHERE PhoneNumberId = @PhoneNumberId AND IsSuccess = 0;
+        -- Remove failed attempts for all memberships of this phone number
+        DELETE ma
+        FROM dbo.MembershipAttempts ma
+        INNER JOIN dbo.Memberships m ON ma.MembershipId = m.UniqueId
+        WHERE m.PhoneNumberId = @PhoneNumberId
+            AND ma.Status = 'failed'
+            AND ma.IsDeleted = 0
+            AND m.IsDeleted = 0;
 
         -- Log event (optional, similar to SP_LogEvent)
         EXEC dbo.SP_LogEvent
