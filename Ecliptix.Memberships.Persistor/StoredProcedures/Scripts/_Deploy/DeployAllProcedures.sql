@@ -23,7 +23,7 @@ PRINT '📋 Deploying utility procedures...';
 GO
 
 -- SP_LogEvent
-:r "$(SQLCMDDBNAME)\..\StoredProcedures\Scripts\Utilities\SP_LogEvent.sql"
+:r Ecliptix.Memberships.Persistor/StoredProcedures/Scripts/Utilities/SP_LogEvent.sql
 GO
 
 -- ============================================================================
@@ -33,11 +33,11 @@ PRINT '🔧 Deploying core procedures...';
 GO
 
 -- SP_EnsurePhoneNumber
-:r "$(SQLCMDDBNAME)\..\StoredProcedures\Scripts\Core\SP_EnsurePhoneNumber.sql"
+:r Ecliptix.Memberships.Persistor/StoredProcedures/Scripts/Core/SP_EnsurePhoneNumber.sql
 GO
 
 -- SP_RegisterAppDevice
-:r "$(SQLCMDDBNAME)\..\StoredProcedures\Scripts\Core\SP_RegisterAppDevice.sql"
+:r Ecliptix.Memberships.Persistor/StoredProcedures/Scripts/Core/SP_RegisterAppDevice.sql
 GO
 
 -- ============================================================================
@@ -47,15 +47,15 @@ PRINT '🔐 Deploying verification procedures...';
 GO
 
 -- SP_InitiateVerificationFlow
-:r "$(SQLCMDDBNAME)\..\StoredProcedures\Scripts\Verification\SP_InitiateVerificationFlow.sql"
+:r Ecliptix.Memberships.Persistor/StoredProcedures/Scripts/Verification/SP_InitiateVerificationFlow.sql
 GO
 
 -- SP_GenerateOtpCode
-:r "$(SQLCMDDBNAME)\..\StoredProcedures\Scripts\Verification\SP_GenerateOtpCode.sql"
+:r Ecliptix.Memberships.Persistor/StoredProcedures/Scripts/Verification/SP_GenerateOtpCode.sql
 GO
 
 -- SP_VerifyOtpCode
-:r "$(SQLCMDDBNAME)\..\StoredProcedures\Scripts\Verification\SP_VerifyOtpCode.sql"
+:r Ecliptix.Memberships.Persistor/StoredProcedures/Scripts/Verification/SP_VerifyOtpCode.sql
 GO
 
 -- ============================================================================

@@ -111,9 +111,11 @@ BEGIN
         -- 8. Log OTP generation
         EXEC dbo.SP_LogEvent
             @EventType = 'otp_generated',
+            @Severity = 'info',
             @Message = 'OTP code generated',
             @EntityType = 'OtpCode',
-            @EntityId = SCOPE_IDENTITY();
+            @EntityId = @OtpUniqueId;
+        -- ^ Use @OtpUniqueId instead of SCOPE_IDENTITY() to match the inserted OTP
 
         COMMIT TRANSACTION;
 
@@ -129,10 +131,12 @@ BEGIN
 
         -- Log the error
         EXEC dbo.SP_LogEvent
-            @EventType = 'otp_generation_error',
+            @EventType = 'otp_generation_failed',
             @Severity = 'error',
-            @Message = 'Failed to generate OTP code',
-            @Details = @ErrorMessage;
+            @Message = @ErrorMessage,
+            @EntityType = 'OtpCode',
+            @EntityId = @OtpUniqueId;
+        -- ^ Use @OtpUniqueId for consistency (may be NULL if error before assignment)
 
         RAISERROR (@ErrorMessage, 16, 1);
     END CATCH
