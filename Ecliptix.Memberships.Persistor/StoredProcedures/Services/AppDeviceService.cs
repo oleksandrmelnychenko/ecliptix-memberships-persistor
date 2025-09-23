@@ -1,7 +1,7 @@
 using System.Data;
-using Ecliptix.Memberships.Persistor.StoredProcedures.Helpers;
 using Ecliptix.Memberships.Persistor.StoredProcedures.Interfaces;
 using Ecliptix.Memberships.Persistor.StoredProcedures.Models;
+using Ecliptix.Memberships.Persistor.StoredProcedures.Utilities;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
 

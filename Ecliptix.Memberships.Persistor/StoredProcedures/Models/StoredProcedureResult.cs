@@ -1,32 +1,30 @@
+using Ecliptix.Memberships.Persistor.StoredProcedures.Models.Enums;
+
 namespace Ecliptix.Memberships.Persistor.StoredProcedures.Models;
 
 public class StoredProcedureResult<T>
 {
     public bool IsSuccess { get; set; }
-    public string Outcome { get; set; } = string.Empty;
+    public ProcedureOutcome Outcome { get; set; }
     public string? ErrorMessage { get; set; }
     public T? Data { get; set; }
     public DateTime ExecutedAt { get; set; } = DateTime.UtcNow;
 
-    public static StoredProcedureResult<T> Success(T data, string outcome = "success")
-    {
-        return new StoredProcedureResult<T>
+    public static StoredProcedureResult<T> Success(T data) =>
+        new()
         {
             IsSuccess = true,
-            Outcome = outcome,
+            Outcome = ProcedureOutcome.Success,
             Data = data
         };
-    }
 
-    public static StoredProcedureResult<T> Failure(string outcome, string? errorMessage = null)
-    {
-        return new StoredProcedureResult<T>
+    public static StoredProcedureResult<T> Failure(ProcedureOutcome outcome, string? errorMessage = null) =>
+        new()
         {
             IsSuccess = false,
             Outcome = outcome,
             ErrorMessage = errorMessage
         };
-    }
 }
 
 public record PhoneNumberData(long PhoneNumberId, Guid UniqueId, bool IsNewlyCreated);

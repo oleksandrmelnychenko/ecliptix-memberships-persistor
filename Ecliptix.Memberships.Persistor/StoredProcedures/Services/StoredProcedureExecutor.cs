@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Ecliptix.Memberships.Persistor.StoredProcedures.Interfaces;
 using Ecliptix.Memberships.Persistor.StoredProcedures.Models;
+using Ecliptix.Memberships.Persistor.StoredProcedures.Models.Enums;
 
 namespace Ecliptix.Memberships.Persistor.StoredProcedures.Services;
 
@@ -50,19 +51,19 @@ public class StoredProcedureExecutor : IStoredProcedureExecutor
                 return StoredProcedureResult<T>.Success(data);
             }
 
-            return StoredProcedureResult<T>.Failure("no_data", "No data returned from stored procedure");
+            return StoredProcedureResult<T>.Failure(ProcedureOutcome.NoData, "No data returned from stored procedure");
         }
         catch (SqlException sqlEx)
         {
             _logger.LogError(sqlEx, "SQL error executing stored procedure {ProcedureName}: {ErrorMessage}",
                 procedureName, sqlEx.Message);
-            return StoredProcedureResult<T>.Failure("sql_error", sqlEx.Message);
+            return StoredProcedureResult<T>.Failure(ProcedureOutcome.SqlError, sqlEx.Message);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error executing stored procedure {ProcedureName}: {ErrorMessage}",
                 procedureName, ex.Message);
-            return StoredProcedureResult<T>.Failure("error", ex.Message);
+            return StoredProcedureResult<T>.Failure(ProcedureOutcome.Error, ex.Message);
         }
     }
 
@@ -99,13 +100,13 @@ public class StoredProcedureExecutor : IStoredProcedureExecutor
         {
             _logger.LogError(sqlEx, "SQL error executing stored procedure {ProcedureName}: {ErrorMessage}",
                 procedureName, sqlEx.Message);
-            return StoredProcedureResult<T>.Failure("sql_error", sqlEx.Message);
+            return StoredProcedureResult<T>.Failure(ProcedureOutcome.Error, sqlEx.Message);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error executing stored procedure {ProcedureName}: {ErrorMessage}",
                 procedureName, ex.Message);
-            return StoredProcedureResult<T>.Failure("error", ex.Message);
+            return StoredProcedureResult<T>.Failure(ProcedureOutcome.Error, ex.Message);
         }
     }
 
@@ -140,13 +141,15 @@ public class StoredProcedureExecutor : IStoredProcedureExecutor
         {
             _logger.LogError(sqlEx, "SQL error executing stored procedure {ProcedureName}: {ErrorMessage}",
                 procedureName, sqlEx.Message);
-            return StoredProcedureResult<object>.Failure("sql_error", sqlEx.Message);
+            return StoredProcedureResult<object>.Failure(ProcedureOutcome.SqlError, sqlEx.Message);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error executing stored procedure {ProcedureName}: {ErrorMessage}",
                 procedureName, ex.Message);
-            return StoredProcedureResult<object>.Failure("error", ex.Message);
+            return StoredProcedureResult<object>.Failure(ProcedureOutcome.Error, ex.Message);
         }
     }
+    
+    
 }

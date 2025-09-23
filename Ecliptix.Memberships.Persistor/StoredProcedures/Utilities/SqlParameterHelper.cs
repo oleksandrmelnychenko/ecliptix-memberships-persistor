@@ -1,7 +1,7 @@
 using System.Data;
 using Microsoft.Data.SqlClient;
 
-namespace Ecliptix.Memberships.Persistor.StoredProcedures.Helpers;
+namespace Ecliptix.Memberships.Persistor.StoredProcedures.Utilities;
 
 public static class SqlParameterHelper
 {

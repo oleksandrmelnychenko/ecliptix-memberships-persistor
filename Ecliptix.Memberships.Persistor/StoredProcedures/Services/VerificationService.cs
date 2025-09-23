@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging;
 using Ecliptix.Memberships.Persistor.StoredProcedures.Interfaces;
 using Ecliptix.Memberships.Persistor.StoredProcedures.Models;
 using System.Data;
-using Ecliptix.Memberships.Persistor.StoredProcedures.Helpers;
+using Ecliptix.Memberships.Persistor.StoredProcedures.Utilities;
 
 namespace Ecliptix.Memberships.Persistor.StoredProcedures.Services;
 
