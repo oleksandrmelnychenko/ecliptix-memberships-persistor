@@ -53,12 +53,11 @@ public class MembershipService : IMembershipService
                     !string.IsNullOrEmpty(outputParams[6].Value?.ToString()) &&
                     (outcome == "created" || outcome == "membership_already_exists"))
                 {
-                    return new CreateMembershipData
-                    {
-                        MembershipUniqueId = membershipUniqueId,
-                        Status = outputParams[5].Value?.ToString() ?? "",
-                        CreationStatus = outputParams[6].Value?.ToString() ?? ""
-                    };
+                    return new CreateMembershipData(
+                        MembershipUniqueId: membershipUniqueId,
+                        Status: outputParams[5].Value?.ToString() ?? "",
+                        CreationStatus: outputParams[6].Value?.ToString() ?? ""
+                    );
                 }
 
                 // Handle rate limit as integer outcome
@@ -112,12 +111,11 @@ public class MembershipService : IMembershipService
                 
                 if (outcome == "success")
                 {
-                    return new LoginMembershipData
-                    {
-                        MembershipUniqueId = outputParams[1].Value as Guid? ?? Guid.Empty,
-                        Status = outputParams[2].Value?.ToString() ?? "",
-                        SecureKey = outputParams[4].Value as byte[] ?? []
-                    };
+                    return new LoginMembershipData(
+                        MembershipUniqueId: outputParams[1].Value as Guid? ?? Guid.Empty,
+                        Status: outputParams[2].Value?.ToString() ?? "",
+                        SecureKey: outputParams[4].Value as byte[] ?? []
+                    );
                 }
                 
                 throw new InvalidOperationException($"Failed to sign in: {outcome} - {errorMessage}");

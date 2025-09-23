@@ -29,50 +29,10 @@ public class StoredProcedureResult<T>
     }
 }
 
-public class PhoneNumberData
-{
-    public long PhoneNumberId { get; set; }
-    public Guid UniqueId { get; set; }
-    public bool IsNewlyCreated { get; set; }
-}
-
-public class DeviceRegistrationData
-{
-    public long DeviceRecordId { get; set; }
-    public Guid DeviceUniqueId { get; set; }
-    public bool IsNewlyCreated { get; set; }
-}
-
-public class VerificationFlowData
-{
-    public Guid FlowUniqueId { get; set; }
-    public DateTime? ExpiresAt { get; set; }
-}
-
-public class OtpGenerationData
-{
-    public string OtpCode { get; set; } = string.Empty;
-    public Guid OtpUniqueId { get; set; }
-    public DateTime ExpiresAt { get; set; }
-}
-
-public class OtpVerificationData
-{
-    public bool IsValid { get; set; }
-    public DateTime? VerifiedAt { get; set; }
-    public int RemainingAttempts { get; set; }
-}
-
-public class CreateMembershipData
-{
-    public Guid MembershipUniqueId { get; set; }
-    public string Status { get; set; } = string.Empty;
-    public string CreationStatus { get; set; } = string.Empty;
-}
-
-public class LoginMembershipData
-{
-    public Guid MembershipUniqueId { get; set; }
-    public string Status { get; set; } = string.Empty;
-    public byte[]? SecureKey { get; set; }
-}
+public record PhoneNumberData(long PhoneNumberId, Guid UniqueId, bool IsNewlyCreated);
+public record DeviceRegistrationData(long DeviceRecordId, Guid DeviceUniqueId, bool IsNewlyCreated);
+public record VerificationFlowData(Guid FlowUniqueId, DateTime? ExpiresAt);
+public record OtpGenerationData(string OtpCode, Guid OtpUniqueId, DateTime ExpiresAt);
+public record OtpVerificationData(bool IsValid, DateTime? VerifiedAt, int RemainingAttempts);
+public record CreateMembershipData(Guid MembershipUniqueId, string Status, string CreationStatus);
+public record LoginMembershipData(Guid MembershipUniqueId, string Status, byte[]? SecureKey);

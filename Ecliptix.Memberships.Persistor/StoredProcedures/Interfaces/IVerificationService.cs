@@ -4,17 +4,11 @@ namespace Ecliptix.Memberships.Persistor.StoredProcedures.Interfaces;
 
 public interface IVerificationService
 {
-    Task<StoredProcedureResult<PhoneNumberData>> EnsurePhoneNumberAsync(
+    Task<StoredProcedureResult<PhoneNumberData>> EnsureMobileNumberAsync(
         string phoneNumber,
         string? region = null,
         CancellationToken cancellationToken = default);
-
-    Task<StoredProcedureResult<DeviceRegistrationData>> RegisterAppDeviceAsync(
-        Guid appInstanceId,
-        Guid deviceId,
-        int deviceType = 1,
-        CancellationToken cancellationToken = default);
-
+    
     Task<StoredProcedureResult<VerificationFlowData>> InitiateVerificationFlowAsync(
         string phoneNumber,
         string region,
