@@ -21,4 +21,12 @@ public interface IStoredProcedureExecutor
         string procedureName,
         SqlParameter[] parameters,
         CancellationToken cancellationToken = default);
+
+    Task<StoredProcedureResult<T>> ExecuteWithOutcomeAsync<T>(
+        string procedureName,
+        SqlParameter[] parameters,
+        Func<SqlParameter[], T> outputMapper,
+        short outcomeIndex,
+        short errorIndex,
+        CancellationToken cancellationToken = default);
 }

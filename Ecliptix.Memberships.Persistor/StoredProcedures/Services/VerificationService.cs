@@ -67,37 +67,17 @@ public class VerificationService : IVerificationService
             SqlParameterHelper.Out("@ErrorMessage", SqlDbType.NVarChar, 500)
         ];
 
-        StoredProcedureResult<VerificationFlowData> result = await _executor.ExecuteWithOutputAsync(
+        return await _executor.ExecuteWithOutcomeAsync(
             "dbo.SP_InitiateVerificationFlow",
             parameters,
-            outputParams =>
-            {
-                string outcome = outputParams[6].Value?.ToString() ?? "error";
-                string? errorMessage = outputParams[7].Value?.ToString();
-                Guid flowId = outputParams[5].Value != DBNull.Value ? (Guid)outputParams[5].Value : Guid.Empty;
-
-                if (outcome == "success")
-                {
-                    return new VerificationFlowData(
-                        FlowUniqueId: flowId,
-                        ExpiresAt: DateTime.UtcNow.AddMinutes(15)
-                    );
-                }
-
-                throw new InvalidOperationException($"Failed to initiate verification flow: {outcome} - {errorMessage}");
-            },
-            cancellationToken);
-
-        if (!result.IsSuccess && result.ErrorMessage?.Contains("Failed to initiate verification flow") == true)
-        {
-            string[] parts = result.ErrorMessage.Split(" - ", 2);
-            if (parts.Length == 2)
-            {
-                return StoredProcedureResult<VerificationFlowData>.Failure(parts[0].Split(": ")[1], parts[1]);
-            }
-        }
-
-        return result;
+            outputParams => new VerificationFlowData(
+                FlowUniqueId: (Guid)outputParams[5].Value,
+                ExpiresAt: DateTime.UtcNow.AddMinutes(15)
+            ),
+            outcomeIndex: 6,
+            errorIndex: 7,
+            cancellationToken
+        );
     }
 
     public async Task<StoredProcedureResult<OtpGenerationData>> GenerateOtpCodeAsync(
@@ -119,37 +99,18 @@ public class VerificationService : IVerificationService
             SqlParameterHelper.Out("@ErrorMessage", SqlDbType.NVarChar, 500)
         ];
 
-        StoredProcedureResult<OtpGenerationData> result = await _executor.ExecuteWithOutputAsync(
+        return await _executor.ExecuteWithOutcomeAsync(
             "dbo.SP_GenerateOtpCode",
             parameters,
-            outputParams =>
-            {
-                string outcome = outputParams[5].Value?.ToString() ?? "error";
-                string? errorMessage = outputParams[6].Value?.ToString();
-
-                if (outcome == "success")
-                {
-                    return new OtpGenerationData(
-                        OtpCode: outputParams[3].Value?.ToString() ?? "",
-                        OtpUniqueId: (Guid)outputParams[4].Value,
-                        ExpiresAt: DateTime.UtcNow.AddMinutes(expiryMinutes)
-                    );
-                }
-
-                throw new InvalidOperationException($"Failed to generate OTP: {outcome} - {errorMessage}");
-            },
-            cancellationToken);
-
-        if (!result.IsSuccess && result.ErrorMessage?.Contains("Failed to generate OTP") == true)
-        {
-            string[] parts = result.ErrorMessage.Split(" - ", 2);
-            if (parts.Length == 2)
-            {
-                return StoredProcedureResult<OtpGenerationData>.Failure(parts[0].Split(": ")[1], parts[1]);
-            }
-        }
-
-        return result;
+            outputParams => new OtpGenerationData(
+                OtpCode: outputParams[3].Value?.ToString() ?? "",
+                OtpUniqueId: (Guid)outputParams[4].Value,
+                ExpiresAt: DateTime.UtcNow.AddMinutes(expiryMinutes)
+            ),
+            outcomeIndex: 5,
+            errorIndex: 6,
+            cancellationToken
+        );
     }
     
     public async Task<StoredProcedureResult<OtpVerificationData>> VerifyOtpCodeAsync(
