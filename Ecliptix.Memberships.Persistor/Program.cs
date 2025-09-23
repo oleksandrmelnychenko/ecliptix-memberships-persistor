@@ -81,6 +81,7 @@ internal static class Program
 
         services.AddScoped<IStoredProcedureExecutor, StoredProcedureExecutor>();
         services.AddScoped<IVerificationService, VerificationService>();
+        services.AddScoped<IMembershipService, MembershipService>();
     }
 
     private static async Task ExecutePendingMigrationsAsync(EcliptixSchemaContext context, Microsoft.Extensions.Logging.ILogger logger)

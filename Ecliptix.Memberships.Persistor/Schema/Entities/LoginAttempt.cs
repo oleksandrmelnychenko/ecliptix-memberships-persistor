@@ -12,6 +12,16 @@ public class LoginAttempt
     [Required]
     public Guid MembershipId { get; set; }
 
+    [MaxLength(18)]
+    public string? PhoneNumber { get; set; }
+
+    [MaxLength(500)]
+    public string? Outcome { get; set; }
+
+    public bool IsSuccess { get; set; }
+
+    public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+
     [Required]
     [MaxLength(20)]
     public string Status { get; set; } = string.Empty;

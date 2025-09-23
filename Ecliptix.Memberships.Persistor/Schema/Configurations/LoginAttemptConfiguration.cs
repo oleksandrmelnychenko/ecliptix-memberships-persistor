@@ -18,6 +18,18 @@ public class LoginAttemptConfiguration : IEntityTypeConfiguration<LoginAttempt>
         builder.Property(e => e.MembershipId)
             .IsRequired();
 
+        builder.Property(e => e.PhoneNumber)
+            .HasMaxLength(18);
+
+        builder.Property(e => e.Outcome)
+            .HasMaxLength(500);
+
+        builder.Property(e => e.IsSuccess)
+            .HasDefaultValue(false);
+
+        builder.Property(e => e.Timestamp)
+            .HasDefaultValueSql("GETUTCDATE()");
+
         builder.Property(e => e.Status)
             .IsRequired()
             .HasMaxLength(20);
@@ -72,6 +84,22 @@ public class LoginAttemptConfiguration : IEntityTypeConfiguration<LoginAttempt>
         builder.HasIndex(e => e.SessionId)
             .HasFilter("IsDeleted = 0 AND SessionId IS NOT NULL")
             .HasDatabaseName("IX_LoginAttempts_SessionId");
+
+        builder.HasIndex(e => e.PhoneNumber)
+            .HasFilter("IsDeleted = 0 AND PhoneNumber IS NOT NULL")
+            .HasDatabaseName("IX_LoginAttempts_PhoneNumber");
+
+        builder.HasIndex(e => e.Outcome)
+            .HasFilter("IsDeleted = 0 AND Outcome IS NOT NULL")
+            .HasDatabaseName("IX_LoginAttempts_Outcome");
+
+        builder.HasIndex(e => e.Timestamp)
+            .HasFilter("IsDeleted = 0")
+            .HasDatabaseName("IX_LoginAttempts_Timestamp");
+
+        builder.HasIndex(e => e.IsSuccess)
+            .HasFilter("IsDeleted = 0")
+            .HasDatabaseName("IX_LoginAttempts_IsSuccess");
 
         builder.HasOne(e => e.Membership)
             .WithMany(m => m.LoginAttempts)

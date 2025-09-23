@@ -51,7 +51,16 @@ GO
 PRINT '👥 Deploying membership procedures...';
 GO
 
+-- SP_CreateMembership
 :r Ecliptix.Memberships.Persistor/StoredProcedures/Scripts/Membership/SP_CreateMembership.sql
+GO
+
+-- SP_LogLoginAttempt
+:r Ecliptix.Memberships.Persistor/StoredProcedures/Scripts/Membership/SP_LogLoginAttempt.sql
+GO
+
+-- SP_LoginMembership
+:r Ecliptix.Memberships.Persistor/StoredProcedures/Scripts/Membership/SP_LoginMembership.sql
 GO
 
 -- ============================================================================
@@ -99,6 +108,12 @@ IF OBJECT_ID('dbo.SP_VerifyOtpCode', 'P') IS NULL
 
 IF OBJECT_ID('dbo.SP_CreateMembership', 'P') IS NULL
     RAISERROR('SP_CreateMembership not found', 16, 1);
+
+IF OBJECT_ID('dbo.SP_LogLoginAttempt', 'P') IS NULL
+    RAISERROR('SP_LogLoginAttempt not found', 16, 1);
+   
+IF OBJECT_ID('dbo.SP_LoginMembership', 'P') IS NULL
+    RAISERROR('SP_LoginMembership not found', 16, 1);
 
 PRINT '✅ All stored procedures deployed successfully!';
 
