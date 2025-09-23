@@ -1,5 +1,3 @@
-using Ecliptix.Memberships.Persistor.StoredProcedures.Models.Enums;
-
 namespace Ecliptix.Memberships.Persistor.StoredProcedures.Models;
 
 public class StoredProcedureResult<T>

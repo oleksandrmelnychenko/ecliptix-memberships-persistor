@@ -88,7 +88,7 @@ BEGIN
         BEGIN
             SELECT @MobileNumberId = UniqueId
             FROM dbo.MobileNumbers
-            WHERE MobileNumber = @MobileNumber AND IsDeleted = 0;
+            WHERE Number = @MobileNumber AND IsDeleted = 0;
 
             IF @MobileNumberId IS NULL
                 SET @Outcome = 'mobile_number_not_found';

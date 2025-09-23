@@ -23,7 +23,7 @@ BEGIN
         -- Check if mobile number already exists
         SELECT @MobileNumberId = Id, @UniqueId = UniqueId
         FROM dbo.MobileNumbers
-        WHERE MobileNumber = @MobileNumber
+        WHERE Number = @MobileNumber
           AND (Region = @Region OR (Region IS NULL AND @Region IS NULL))
           AND IsDeleted = 0;
 
@@ -32,7 +32,7 @@ BEGIN
         BEGIN
             SET @UniqueId = NEWID();
 
-            INSERT INTO dbo.MobileNumbers (MobileNumber, Region, UniqueId, CreatedAt, UpdatedAt)
+            INSERT INTO dbo.MobileNumbers (Number, Region, UniqueId, CreatedAt, UpdatedAt)
             VALUES (@MobileNumber, @Region, @UniqueId, GETUTCDATE(), GETUTCDATE());
 
             SET @MobileNumberId = SCOPE_IDENTITY();
