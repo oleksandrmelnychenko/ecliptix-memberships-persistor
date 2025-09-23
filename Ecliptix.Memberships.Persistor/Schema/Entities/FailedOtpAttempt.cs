@@ -20,12 +20,6 @@ public class FailedOtpAttempt
     [MaxLength(50)]
     public string FailureReason { get; set; } = string.Empty;
 
-    [MaxLength(45)]
-    public string? IpAddress { get; set; }
-
-    [MaxLength(500)]
-    public string? UserAgent { get; set; }
-
     public DateTime AttemptedAt { get; set; } = DateTime.UtcNow;
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

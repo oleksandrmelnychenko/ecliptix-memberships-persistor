@@ -33,12 +33,6 @@ public class EventLogConfiguration : IEntityTypeConfiguration<EventLog>
         builder.Property(e => e.EntityType)
             .HasMaxLength(100);
 
-        builder.Property(e => e.IpAddress)
-            .HasMaxLength(45);
-
-        builder.Property(e => e.UserAgent)
-            .HasMaxLength(500);
-
         builder.Property(e => e.SessionId)
             .HasMaxLength(100);
 

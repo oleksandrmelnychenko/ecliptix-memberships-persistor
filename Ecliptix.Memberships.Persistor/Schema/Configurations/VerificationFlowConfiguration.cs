@@ -15,7 +15,7 @@ public class VerificationFlowConfiguration : IEntityTypeConfiguration<Verificati
         builder.Property(e => e.Id)
             .UseIdentityColumn();
 
-        builder.Property(e => e.PhoneNumberId)
+        builder.Property(e => e.MobileNumberId)
             .IsRequired();
 
         builder.Property(e => e.AppDeviceId)
@@ -59,8 +59,8 @@ public class VerificationFlowConfiguration : IEntityTypeConfiguration<Verificati
             .IsUnique()
             .HasDatabaseName("UQ_VerificationFlows_UniqueId");
 
-        builder.HasIndex(e => e.PhoneNumberId)
-            .HasDatabaseName("IX_VerificationFlows_PhoneNumberId");
+        builder.HasIndex(e => e.MobileNumberId)
+            .HasDatabaseName("IX_VerificationFlows_MobileNumberId");
 
         builder.HasIndex(e => e.AppDeviceId)
             .HasDatabaseName("IX_VerificationFlows_AppDeviceId");
@@ -73,9 +73,9 @@ public class VerificationFlowConfiguration : IEntityTypeConfiguration<Verificati
             .HasFilter("IsDeleted = 0")
             .HasDatabaseName("IX_VerificationFlows_ExpiresAt");
 
-        builder.HasOne(e => e.PhoneNumber)
+        builder.HasOne(e => e.MobileNumber)
             .WithMany(p => p.VerificationFlows)
-            .HasForeignKey(e => e.PhoneNumberId)
+            .HasForeignKey(e => e.MobileNumberId)
             .OnDelete(DeleteBehavior.Cascade)
             .HasConstraintName("FK_VerificationFlows_MobileNumbers");
 

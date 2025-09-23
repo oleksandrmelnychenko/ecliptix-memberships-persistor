@@ -1,15 +1,15 @@
 -- ============================================================================
--- SP_EnsurePhoneNumber - Get or create phone number record
+-- SP_EnsureMobileNumber - Get or create mobile number record
 -- ============================================================================
--- Purpose: Ensures a phone number exists in the database, creates if needed
+-- Purpose: Ensures a mobile number exists in the database, creates if needed
 -- Author: EcliptixPersistorMigrator
 -- Created: 2025-09-16
 -- ============================================================================
 
-CREATE OR ALTER PROCEDURE dbo.SP_EnsurePhoneNumber
-    @PhoneNumber NVARCHAR(18),
+CREATE OR ALTER PROCEDURE dbo.SP_EnsureMobileNumber
+    @MobileNumber NVARCHAR(18),
     @Region NVARCHAR(2) = NULL,
-    @PhoneNumberId BIGINT OUTPUT,
+    @MobileNumberId BIGINT OUTPUT,
     @UniqueId UNIQUEIDENTIFIER OUTPUT,
     @IsNewlyCreated BIT OUTPUT
 AS
@@ -20,30 +20,30 @@ BEGIN
     BEGIN TRY
         BEGIN TRANSACTION;
 
-        -- Check if phone number already exists
-        SELECT @PhoneNumberId = Id, @UniqueId = UniqueId
+        -- Check if mobile number already exists
+        SELECT @MobileNumberId = Id, @UniqueId = UniqueId
         FROM dbo.MobileNumbers
-        WHERE PhoneNumber = @PhoneNumber
+        WHERE MobileNumber = @MobileNumber
           AND (Region = @Region OR (Region IS NULL AND @Region IS NULL))
           AND IsDeleted = 0;
 
         -- Create if doesn't exist
-        IF @PhoneNumberId IS NULL
+        IF @MobileNumberId IS NULL
         BEGIN
             SET @UniqueId = NEWID();
 
-            INSERT INTO dbo.MobileNumbers (PhoneNumber, Region, UniqueId, CreatedAt, UpdatedAt)
-            VALUES (@PhoneNumber, @Region, @UniqueId, GETUTCDATE(), GETUTCDATE());
+            INSERT INTO dbo.MobileNumbers (MobileNumber, Region, UniqueId, CreatedAt, UpdatedAt)
+            VALUES (@MobileNumber, @Region, @UniqueId, GETUTCDATE(), GETUTCDATE());
 
-            SET @PhoneNumberId = SCOPE_IDENTITY();
+            SET @MobileNumberId = SCOPE_IDENTITY();
             SET @IsNewlyCreated = 1;
 
             -- Log creation
             EXEC dbo.SP_LogEvent
-                @EventType = 'phone_number_created',
-                @Message = 'New phone number registered',
+                @EventType = 'Mobile_number_created',
+                @Message = 'New Mobile number registered',
                 @EntityType = 'MobileNumber',
-                @EntityId = @PhoneNumberId;
+                @EntityId = @MobileNumberId;
         END
 
         COMMIT TRANSACTION;

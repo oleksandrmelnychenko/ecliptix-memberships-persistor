@@ -31,12 +31,6 @@ public class EventLog
 
     public Guid? UserId { get; set; }
 
-    [MaxLength(45)]
-    public string? IpAddress { get; set; }
-
-    [MaxLength(500)]
-    public string? UserAgent { get; set; }
-
     [MaxLength(100)]
     public string? SessionId { get; set; }
 

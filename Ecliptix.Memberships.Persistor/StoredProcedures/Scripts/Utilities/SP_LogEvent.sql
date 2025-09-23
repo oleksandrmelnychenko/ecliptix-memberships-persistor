@@ -14,8 +14,6 @@ CREATE OR ALTER PROCEDURE dbo.SP_LogEvent
     @EntityType NVARCHAR(100) = NULL,
     @EntityId BIGINT = NULL,
     @UserId UNIQUEIDENTIFIER = NULL,
-    @IpAddress NVARCHAR(45) = NULL,
-    @UserAgent NVARCHAR(500) = NULL,
     @SessionId NVARCHAR(100) = NULL
 AS
 BEGIN
@@ -34,8 +32,6 @@ BEGIN
             EntityType NVARCHAR(100) NULL,
             EntityId BIGINT NULL,
             UserId UNIQUEIDENTIFIER NULL,
-            IpAddress NVARCHAR(45) NULL,
-            UserAgent NVARCHAR(500) NULL,
             SessionId NVARCHAR(100) NULL,
             OccurredAt DATETIME2 NOT NULL,
             CreatedAt DATETIME2 NOT NULL,
@@ -54,12 +50,12 @@ BEGIN
         -- Insert event log
         INSERT INTO dbo.EventLogs (
             EventType, Severity, Message, Details, EntityType, EntityId,
-            UserId, IpAddress, UserAgent, SessionId, OccurredAt,
+            UserId, SessionId, OccurredAt,
             CreatedAt, UpdatedAt, IsDeleted, UniqueId
         )
         VALUES (
             @EventType, @Severity, @Message, @Details, @EntityType, @EntityId,
-            @UserId, @IpAddress, @UserAgent, @SessionId, GETUTCDATE(),
+            @UserId, @SessionId, GETUTCDATE(),
             GETUTCDATE(), GETUTCDATE(), 0, NEWID()
         );
 

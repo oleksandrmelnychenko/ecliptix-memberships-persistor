@@ -20,7 +20,7 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
-    DECLARE @PhoneNumberId UNIQUEIDENTIFIER;
+    DECLARE @MobileNumberId UNIQUEIDENTIFIER;
     DECLARE @AppDeviceId UNIQUEIDENTIFIER;
     DECLARE @ExistingMembershipId BIGINT;
     DECLARE @ExistingCreationStatus NVARCHAR(20);
@@ -40,10 +40,10 @@ BEGIN
     BEGIN TRY
         BEGIN TRANSACTION;
 
-        -- 1. Get PhoneNumberId
-        SELECT @PhoneNumberId = pn.UniqueId
+        -- 1. Get MobileNumberId
+        SELECT @MobileNumberId = pn.UniqueId
         FROM dbo.VerificationFlows vf
-            JOIN dbo.PhoneNumbers pn ON vf.PhoneNumberId = pn.Id
+            JOIN dbo.MobileNumbers pn ON vf.MobileNumberId = pn.Id
         WHERE vf.UniqueId = @FlowUniqueId AND vf.IsDeleted = 0;
 
         -- 2. Rate limiting check
@@ -52,7 +52,7 @@ BEGIN
             @EarliestFailedAttempt = MIN(ma.AttemptedAt)
         FROM dbo.MembershipAttempts ma
         INNER JOIN dbo.Memberships m ON ma.MembershipId = m.UniqueId
-        WHERE m.PhoneNumberId = @PhoneNumberId
+        WHERE m.MobileNumberId = @MobileNumberId
             AND ma.Status = 'failed'
             AND ma.AttemptedAt > DATEADD(hour, -@AttemptWindowHours, GETUTCDATE())
             AND ma.IsDeleted = 0
@@ -66,7 +66,7 @@ BEGIN
             INSERT INTO dbo.MembershipAttempts (MembershipId, AttemptType, Status, ErrorMessage, AttemptedAt, CreatedAt, UpdatedAt, IsDeleted)
             SELECT TOP 1 m.UniqueId, 'create', 'failed', 'rate_limit_exceeded', GETUTCDATE(), GETUTCDATE(), GETUTCDATE(), 0
             FROM dbo.Memberships m
-            WHERE m.PhoneNumberId = @PhoneNumberId AND m.IsDeleted = 0
+            WHERE m.MobileNumberId = @MobileNumberId AND m.IsDeleted = 0
             ORDER BY m.CreatedAt DESC;
             SET @ErrorMessage = 'rate_limit_exceeded';
             ROLLBACK TRANSACTION;
@@ -75,10 +75,10 @@ BEGIN
 
         -- 3. Get session details
         SELECT
-            @PhoneNumberId = pn.UniqueId,
+            @MobileNumberId = pn.UniqueId,
             @AppDeviceId = vf.AppDeviceId
         FROM dbo.VerificationFlows vf
-            JOIN dbo.PhoneNumbers pn ON vf.PhoneNumberId = pn.Id
+            JOIN dbo.MobileNumbers pn ON vf.MobileNumberId = pn.Id
         WHERE vf.UniqueId = @FlowUniqueId
             AND vf.ConnectionId = @ConnectionId
             AND vf.Purpose = 'registration'
@@ -89,12 +89,12 @@ BEGIN
         BEGIN
             SET @Outcome = 'verification_flow_not_found';
             -- Log attempt (verification flow not found)
-            IF @PhoneNumberId IS NOT NULL
+            IF @MobileNumberId IS NOT NULL
             BEGIN
                 INSERT INTO dbo.MembershipAttempts (MembershipId, AttemptType, Status, ErrorMessage, AttemptedAt, CreatedAt, UpdatedAt, IsDeleted)
                 SELECT TOP 1 m.UniqueId, 'create', 'failed', 'verification_flow_not_found', GETUTCDATE(), GETUTCDATE(), GETUTCDATE(), 0
                 FROM dbo.Memberships m
-                WHERE m.PhoneNumberId = @PhoneNumberId AND m.IsDeleted = 0
+                WHERE m.MobileNumberId = @MobileNumberId AND m.IsDeleted = 0
                 ORDER BY m.CreatedAt DESC;
             END
 
@@ -110,7 +110,7 @@ BEGIN
             @Status = Status,
             @ExistingCreationStatus = CreationStatus
         FROM dbo.Memberships
-        WHERE PhoneNumberId = @PhoneNumberId AND AppDeviceId = @AppDeviceId AND IsDeleted = 0;
+        WHERE MobileNumberId = @MobileNumberId AND AppDeviceId = @AppDeviceId AND IsDeleted = 0;
 
         IF @ExistingMembershipId IS NOT NULL
         BEGIN
@@ -121,7 +121,7 @@ BEGIN
                 CASE WHEN @Outcome = 'created' THEN 'success' ELSE 'failed' END, 
                 @Outcome, GETUTCDATE(), GETUTCDATE(), GETUTCDATE(), 0
             FROM dbo.Memberships m
-            WHERE m.PhoneNumberId = @PhoneNumberId AND m.IsDeleted = 0
+            WHERE m.MobileNumberId = @MobileNumberId AND m.IsDeleted = 0
             ORDER BY m.CreatedAt DESC;
 
             SET @ResultCreationStatus = @ExistingCreationStatus;
@@ -132,9 +132,9 @@ BEGIN
 
         -- 5. Create new membership
         DECLARE @OutputTable TABLE (UniqueId UNIQUEIDENTIFIER, Status NVARCHAR(20), CreationStatus NVARCHAR(20));
-        INSERT INTO dbo.Memberships (PhoneNumberId, AppDeviceId, VerificationFlowId, Status, CreationStatus)
+        INSERT INTO dbo.Memberships (MobileNumberId, AppDeviceId, VerificationFlowId, Status, CreationStatus)
             OUTPUT inserted.UniqueId, inserted.Status, inserted.CreationStatus INTO @OutputTable
-        VALUES (@PhoneNumberId, @AppDeviceId, @FlowUniqueId, 'active', @CreationStatus);
+        VALUES (@MobileNumberId, @AppDeviceId, @FlowUniqueId, 'active', @CreationStatus);
 
         SELECT @MembershipUniqueId = UniqueId, @Status = Status, @ResultCreationStatus = CreationStatus FROM @OutputTable;
 
@@ -147,14 +147,14 @@ BEGIN
             CASE WHEN @Outcome = 'created' THEN 'success' ELSE 'failed' END, 
             @Outcome, GETUTCDATE(), GETUTCDATE(), GETUTCDATE(), 0
         FROM dbo.Memberships m
-        WHERE m.PhoneNumberId = @PhoneNumberId AND m.IsDeleted = 0
+        WHERE m.MobileNumberId = @MobileNumberId AND m.IsDeleted = 0
         ORDER BY m.CreatedAt DESC;
 
-        -- Remove failed attempts for all memberships of this phone number
+        -- Remove failed attempts for all memberships of this Mobile number
         DELETE ma
         FROM dbo.MembershipAttempts ma
         INNER JOIN dbo.Memberships m ON ma.MembershipId = m.UniqueId
-        WHERE m.PhoneNumberId = @PhoneNumberId
+        WHERE m.MobileNumberId = @MobileNumberId
             AND ma.Status = 'failed'
             AND ma.IsDeleted = 0
             AND m.IsDeleted = 0;

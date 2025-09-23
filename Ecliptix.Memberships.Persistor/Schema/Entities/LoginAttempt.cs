@@ -13,7 +13,7 @@ public class LoginAttempt
     public Guid MembershipId { get; set; }
 
     [MaxLength(18)]
-    public string? PhoneNumber { get; set; }
+    public string? MobileNumber { get; set; }
 
     [MaxLength(500)]
     public string? Outcome { get; set; }
@@ -28,12 +28,6 @@ public class LoginAttempt
 
     [MaxLength(500)]
     public string? ErrorMessage { get; set; }
-
-    [MaxLength(45)]
-    public string? IpAddress { get; set; }
-
-    [MaxLength(500)]
-    public string? UserAgent { get; set; }
 
     [MaxLength(100)]
     public string? SessionId { get; set; }

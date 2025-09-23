@@ -18,6 +18,16 @@ StoredProcedures/
 ├── Models/                  # Data transfer objects
 └── Interfaces/              # Service contracts
 ```
+## Create and push migration
+
+```bash
+dotnet ef migrations add {NameOfMigration}
+```
+
+```bash
+dotnet ef database update
+```
+
 
 ## 🚀 Usage
 

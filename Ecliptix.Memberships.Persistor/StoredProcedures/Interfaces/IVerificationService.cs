@@ -32,7 +32,5 @@ public interface IVerificationService
     Task<StoredProcedureResult<OtpVerificationData>> VerifyOtpCodeAsync(
         Guid flowUniqueId,
         string otpCode,
-        string? ipAddress = null,
-        string? userAgent = null,
         CancellationToken cancellationToken = default);
 }

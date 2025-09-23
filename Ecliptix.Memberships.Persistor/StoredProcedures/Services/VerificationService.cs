@@ -183,12 +183,10 @@ public class VerificationService : IVerificationService
 
         return result;
     }
-
+    
     public async Task<StoredProcedureResult<OtpVerificationData>> VerifyOtpCodeAsync(
         Guid flowUniqueId,
         string otpCode,
-        string? ipAddress = null,
-        string? userAgent = null,
         CancellationToken cancellationToken = default)
     {
         _logger.LogDebug("Verifying OTP code for flow: {FlowId}", flowUniqueId);
@@ -197,8 +195,6 @@ public class VerificationService : IVerificationService
         {
             new SqlParameter("@FlowUniqueId", flowUniqueId),
             new SqlParameter("@OtpCode", otpCode),
-            new SqlParameter("@IpAddress", ipAddress ?? (object)DBNull.Value),
-            new SqlParameter("@UserAgent", userAgent ?? (object)DBNull.Value),
             new SqlParameter("@IsValid", SqlDbType.Bit) { Direction = ParameterDirection.Output },
             new SqlParameter("@Outcome", SqlDbType.NVarChar, 50) { Direction = ParameterDirection.Output },
             new SqlParameter("@ErrorMessage", SqlDbType.NVarChar, 500) { Direction = ParameterDirection.Output },
@@ -210,10 +206,10 @@ public class VerificationService : IVerificationService
             parameters,
             outputParams =>
             {
-                bool isValid = (bool)outputParams[4].Value;
-                string outcome = outputParams[5].Value?.ToString() ?? "invalid";
-                string? errorMessage = outputParams[6].Value?.ToString();
-                DateTime? verifiedAt = outputParams[7].Value != DBNull.Value ? (DateTime?)outputParams[7].Value : null;
+                bool isValid = (bool)outputParams[2].Value;
+                string outcome = outputParams[3].Value?.ToString() ?? "invalid";
+                string? errorMessage = outputParams[4].Value?.ToString();
+                DateTime? verifiedAt = outputParams[5].Value != DBNull.Value ? (DateTime?)outputParams[7].Value : null;
 
                 return new OtpVerificationData
                 {

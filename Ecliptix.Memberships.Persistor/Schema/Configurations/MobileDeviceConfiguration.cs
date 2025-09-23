@@ -15,7 +15,7 @@ public class MobileDeviceConfiguration : IEntityTypeConfiguration<MobileDevice>
         builder.Property(e => e.Id)
             .UseIdentityColumn();
 
-        builder.Property(e => e.PhoneNumberId)
+        builder.Property(e => e.MobileNumberId)
             .IsRequired();
 
         builder.Property(e => e.DeviceId)
@@ -44,12 +44,12 @@ public class MobileDeviceConfiguration : IEntityTypeConfiguration<MobileDevice>
             .IsUnique()
             .HasDatabaseName("UQ_MobileDevices_UniqueId");
 
-        builder.HasIndex(e => new { e.PhoneNumberId, e.DeviceId })
+        builder.HasIndex(e => new { e.MobileNumberId, e.DeviceId })
             .IsUnique()
             .HasDatabaseName("UQ_MobileDevices_PhoneDevice");
 
-        builder.HasIndex(e => e.PhoneNumberId)
-            .HasDatabaseName("IX_MobileDevices_PhoneNumberId");
+        builder.HasIndex(e => e.MobileNumberId)
+            .HasDatabaseName("IX_MobileDevices_MobileNumberId");
 
         builder.HasIndex(e => e.DeviceId)
             .HasDatabaseName("IX_MobileDevices_DeviceId");
@@ -63,9 +63,9 @@ public class MobileDeviceConfiguration : IEntityTypeConfiguration<MobileDevice>
             .HasFilter("IsDeleted = 0 AND LastUsedAt IS NOT NULL")
             .HasDatabaseName("IX_MobileDevices_LastUsedAt");
 
-        builder.HasOne(e => e.PhoneNumber)
+        builder.HasOne(e => e.MobileNumber)
             .WithMany(p => p.MobileDevices)
-            .HasForeignKey(e => e.PhoneNumberId)
+            .HasForeignKey(e => e.MobileNumberId)
             .OnDelete(DeleteBehavior.Cascade)
             .HasConstraintName("FK_MobileDevices_MobileNumbers");
 

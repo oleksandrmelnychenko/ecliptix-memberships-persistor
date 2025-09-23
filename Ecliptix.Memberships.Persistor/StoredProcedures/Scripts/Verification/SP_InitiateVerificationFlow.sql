@@ -1,5 +1,5 @@
 -- ============================================================================
--- SP_InitiateVerificationFlow - Start phone verification process
+-- SP_InitiateVerificationFlow - Start mobile verification process
 -- ============================================================================
 -- Purpose: Initiates a new verification flow with rate limiting and validation
 -- Author: EcliptixPersistorMigrator
@@ -7,7 +7,7 @@
 -- ============================================================================
 
 CREATE OR ALTER PROCEDURE dbo.SP_InitiateVerificationFlow
-    @PhoneNumber NVARCHAR(18),
+    @MobileNumber NVARCHAR(18),
     @Region NVARCHAR(2),
     @AppDeviceId UNIQUEIDENTIFIER,
     @Purpose NVARCHAR(30) = 'unspecified',
@@ -19,7 +19,7 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
-    DECLARE @PhoneNumberId BIGINT;
+    DECLARE @MobileNumberId BIGINT;
     DECLARE @DeviceRecordId BIGINT;
     DECLARE @FlowId BIGINT;
 
@@ -29,16 +29,16 @@ BEGIN
     BEGIN TRY
         BEGIN TRANSACTION;
 
-        -- 1. Ensure phone number exists
-        DECLARE @PhoneUniqueId UNIQUEIDENTIFIER;
-        DECLARE @IsPhoneNewlyCreated BIT;
+        -- 1. Ensure mobile number exists
+        DECLARE @MobileUniqueId UNIQUEIDENTIFIER;
+        DECLARE @IsMobileNewlyCreated BIT;
 
-        EXEC dbo.SP_EnsurePhoneNumber
-            @PhoneNumber = @PhoneNumber,
+        EXEC dbo.SP_EnsureMobileNumber
+            @MobileNumber = @MobileNumber,
             @Region = @Region,
-            @PhoneNumberId = @PhoneNumberId OUTPUT,
-            @UniqueId = @PhoneUniqueId OUTPUT,
-            @IsNewlyCreated = @IsPhoneNewlyCreated OUTPUT;
+            @MobileNumberId = @MobileNumberId OUTPUT,
+            @UniqueId = @MobileUniqueId OUTPUT,
+            @IsNewlyCreated = @IsMobileNewlyCreated OUTPUT;
 
         -- 2. Validate device exists
         SELECT @DeviceRecordId = Id
@@ -58,7 +58,7 @@ BEGIN
         IF EXISTS (
             SELECT 1 FROM dbo.VerificationFlows
             WHERE AppDeviceId = @AppDeviceId
-              AND PhoneNumberId = @PhoneNumberId
+              AND MobileNumberId = @MobileNumberId
               AND Purpose = @Purpose
               AND Status = 'pending'
               AND ExpiresAt > GETUTCDATE()
@@ -71,13 +71,13 @@ BEGIN
             RETURN;
         END
 
-        -- 4. Rate limiting - 30 flows per hour per phone number
+        -- 4. Rate limiting - 30 flows per hour per mobile number
         DECLARE @MaxFlowsPerHour INT = 30;
         DECLARE @RecentFlowCount INT;
 
         SELECT @RecentFlowCount = COUNT(*)
         FROM dbo.VerificationFlows
-        WHERE PhoneNumberId = @PhoneNumberId
+        WHERE MobileNumberId = @MobileNumberId
           AND CreatedAt > DATEADD(hour, -1, GETUTCDATE());
 
         IF @RecentFlowCount >= @MaxFlowsPerHour
@@ -109,11 +109,11 @@ BEGIN
         SET @FlowUniqueId = NEWID();
 
         INSERT INTO dbo.VerificationFlows (
-            PhoneNumberId, AppDeviceId, Status, Purpose, ExpiresAt,
+            MobileNumberId, AppDeviceId, Status, Purpose, ExpiresAt,
             OtpCount, ConnectionId, UniqueId, CreatedAt, UpdatedAt
         )
         VALUES (
-            @PhoneNumberId, @AppDeviceId, 'pending', @Purpose,
+            @MobileNumberId, @AppDeviceId, 'pending', @Purpose,
             DATEADD(minute, 15, GETUTCDATE()), 0, @ConnectionId, @FlowUniqueId,
             GETUTCDATE(), GETUTCDATE()
         );

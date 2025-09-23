@@ -29,12 +29,6 @@ public class MembershipAttemptConfiguration : IEntityTypeConfiguration<Membershi
         builder.Property(e => e.ErrorMessage)
             .HasMaxLength(500);
 
-        builder.Property(e => e.IpAddress)
-            .HasMaxLength(45);
-
-        builder.Property(e => e.UserAgent)
-            .HasMaxLength(500);
-
         builder.Property(e => e.AttemptedAt)
             .HasDefaultValueSql("GETUTCDATE()");
 
@@ -65,10 +59,6 @@ public class MembershipAttemptConfiguration : IEntityTypeConfiguration<Membershi
         builder.HasIndex(e => e.Status)
             .HasFilter("IsDeleted = 0")
             .HasDatabaseName("IX_MembershipAttempts_Status");
-
-        builder.HasIndex(e => e.IpAddress)
-            .HasFilter("IsDeleted = 0 AND IpAddress IS NOT NULL")
-            .HasDatabaseName("IX_MembershipAttempts_IpAddress");
 
         builder.HasOne(e => e.Membership)
             .WithMany(m => m.MembershipAttempts)

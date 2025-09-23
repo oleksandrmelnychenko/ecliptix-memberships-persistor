@@ -10,7 +10,7 @@ public class VerificationFlow
     public long Id { get; set; }
 
     [Required]
-    public long PhoneNumberId { get; set; }
+    public long MobileNumberId { get; set; }
 
     [Required]
     public Guid AppDeviceId { get; set; }
@@ -38,8 +38,8 @@ public class VerificationFlow
 
     public Guid UniqueId { get; set; } = Guid.NewGuid();
 
-    [ForeignKey(nameof(PhoneNumberId))]
-    public virtual MobileNumber PhoneNumber { get; set; } = null!;
+    [ForeignKey(nameof(MobileNumberId))]
+    public virtual MobileNumber MobileNumber { get; set; } = null!;
 
     [ForeignKey(nameof(AppDeviceId))]
     public virtual Device AppDevice { get; set; } = null!;

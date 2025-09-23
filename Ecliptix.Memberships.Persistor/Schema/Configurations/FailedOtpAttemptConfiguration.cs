@@ -26,12 +26,6 @@ public class FailedOtpAttemptConfiguration : IEntityTypeConfiguration<FailedOtpA
             .IsRequired()
             .HasMaxLength(50);
 
-        builder.Property(e => e.IpAddress)
-            .HasMaxLength(45);
-
-        builder.Property(e => e.UserAgent)
-            .HasMaxLength(500);
-
         builder.Property(e => e.AttemptedAt)
             .HasDefaultValueSql("GETUTCDATE()");
 
@@ -58,10 +52,6 @@ public class FailedOtpAttemptConfiguration : IEntityTypeConfiguration<FailedOtpA
             .IsDescending()
             .HasFilter("IsDeleted = 0")
             .HasDatabaseName("IX_FailedOtpAttempts_AttemptedAt");
-
-        builder.HasIndex(e => e.IpAddress)
-            .HasFilter("IsDeleted = 0 AND IpAddress IS NOT NULL")
-            .HasDatabaseName("IX_FailedOtpAttempts_IpAddress");
 
         builder.HasOne(e => e.OtpRecord)
             .WithMany(o => o.FailedAttempts)

@@ -15,7 +15,7 @@ public class MembershipConfiguration : IEntityTypeConfiguration<Membership>
         builder.Property(e => e.Id)
             .UseIdentityColumn();
 
-        builder.Property(e => e.PhoneNumberId)
+        builder.Property(e => e.MobileNumberId)
             .IsRequired();
 
         builder.Property(e => e.AppDeviceId)
@@ -57,12 +57,12 @@ public class MembershipConfiguration : IEntityTypeConfiguration<Membership>
             .IsUnique()
             .HasDatabaseName("UQ_Memberships_UniqueId");
 
-        builder.HasIndex(e => new { e.PhoneNumberId, e.AppDeviceId, e.IsDeleted })
+        builder.HasIndex(e => new { e.MobileNumberId, e.AppDeviceId, e.IsDeleted })
             .IsUnique()
             .HasDatabaseName("UQ_Memberships_ActiveMembership");
 
-        builder.HasIndex(e => e.PhoneNumberId)
-            .HasDatabaseName("IX_Memberships_PhoneNumberId");
+        builder.HasIndex(e => e.MobileNumberId)
+            .HasDatabaseName("IX_Memberships_MobileNumberId");
 
         builder.HasIndex(e => e.AppDeviceId)
             .HasDatabaseName("IX_Memberships_AppDeviceId");
@@ -71,9 +71,9 @@ public class MembershipConfiguration : IEntityTypeConfiguration<Membership>
             .HasFilter("IsDeleted = 0")
             .HasDatabaseName("IX_Memberships_Status");
 
-        builder.HasOne(e => e.PhoneNumber)
+        builder.HasOne(e => e.MobileNumber)
             .WithMany(p => p.Memberships)
-            .HasForeignKey(e => e.PhoneNumberId)
+            .HasForeignKey(e => e.MobileNumberId)
             .HasPrincipalKey(p => p.UniqueId)
             .OnDelete(DeleteBehavior.NoAction)
             .HasConstraintName("FK_Memberships_MobileNumbers");

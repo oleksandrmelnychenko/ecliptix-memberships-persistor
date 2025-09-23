@@ -71,3 +71,10 @@ public class CreateMembershipData
     public string Status { get; set; } = string.Empty;
     public string CreationStatus { get; set; } = string.Empty;
 }
+
+public class LoginMembershipData
+{
+    public Guid MembershipUniqueId { get; set; }
+    public string Status { get; set; } = string.Empty;
+    public byte[]? SecureKey { get; set; }
+}

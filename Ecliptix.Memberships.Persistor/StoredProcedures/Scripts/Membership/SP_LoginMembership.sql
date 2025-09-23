@@ -7,7 +7,7 @@
 -- ============================================================================
 
 CREATE OR ALTER PROCEDURE dbo.SP_LoginMembership
-    @PhoneNumber NVARCHAR(18),
+    @MobileNumber NVARCHAR(18),
     @MembershipUniqueId UNIQUEIDENTIFIER OUTPUT,
     @Status NVARCHAR(20) OUTPUT,
     @Outcome NVARCHAR(500) OUTPUT,
@@ -17,7 +17,7 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
-    DECLARE @PhoneNumberId UNIQUEIDENTIFIER, @CreationStatus NVARCHAR(20);
+    DECLARE @MobileNumberId UNIQUEIDENTIFIER, @CreationStatus NVARCHAR(20);
     DECLARE @CurrentTime DATETIME2(7) = GETUTCDATE();
     DECLARE @AttemptsInLast5Minutes INT;
     DECLARE @LockoutDurationMinutes INT = 5;
@@ -39,7 +39,7 @@ BEGIN
         -- 1. Check for active lockout
         SELECT TOP 1 @LockoutMarkerOutcome = Outcome, @LastLockoutInitTime = Timestamp
         FROM dbo.LoginAttempts
-        WHERE PhoneNumber = @PhoneNumber AND Outcome LIKE @LockoutPattern
+        WHERE MobileNumber = @MobileNumber AND Outcome LIKE @LockoutPattern
         ORDER BY Timestamp DESC;
 
         IF @LockoutMarkerOutcome IS NOT NULL
@@ -59,7 +59,7 @@ BEGIN
             ELSE IF @LockedUntilTs IS NOT NULL AND @CurrentTime >= @LockedUntilTs
             BEGIN
                 DELETE FROM dbo.LoginAttempts
-                WHERE PhoneNumber = @PhoneNumber
+                WHERE MobileNumber = @MobileNumber
                 AND Timestamp <= @LastLockoutInitTime;
             END
         END
@@ -67,7 +67,7 @@ BEGIN
         -- 2. Count attempts in last 5 minutes (excluding lockout markers)
         SELECT @AttemptsInLast5Minutes = COUNT(*)
         FROM dbo.LoginAttempts
-        WHERE PhoneNumber = @PhoneNumber
+        WHERE MobileNumber = @MobileNumber
         AND Timestamp > DATEADD(minute, -5, @CurrentTime)
         AND Outcome NOT LIKE @LockoutPattern;
 
@@ -76,22 +76,22 @@ BEGIN
         BEGIN
             SET @LockedUntilTs = DATEADD(minute, @LockoutDurationMinutes, @CurrentTime);
             DECLARE @NewLockoutMarker NVARCHAR(MAX) = CONCAT(@LockoutMarkerPrefix, CONVERT(NVARCHAR(30), @LockedUntilTs, 127));
-            EXEC dbo.SP_LogLoginAttempt @PhoneNumber, @NewLockoutMarker, 0;
+            EXEC dbo.SP_LogLoginAttempt @MobileNumber, @NewLockoutMarker, 0;
             SET @Outcome = CAST(@LockoutDurationMinutes AS NVARCHAR(100));
             RETURN;
         END
 
         -- 4. Login attempt logic
-        IF @PhoneNumber IS NULL OR @PhoneNumber = ''
-            SET @Outcome = 'phone_number_cannot_be_empty';
+        IF @MobileNumber IS NULL OR @MobileNumber = ''
+            SET @Outcome = 'mobile_number_cannot_be_empty';
         ELSE
         BEGIN
-            SELECT @PhoneNumberId = UniqueId
-            FROM dbo.PhoneNumbers
-            WHERE PhoneNumber = @PhoneNumber AND IsDeleted = 0;
+            SELECT @MobileNumberId = UniqueId
+            FROM dbo.MobileNumbers
+            WHERE MobileNumber = @MobileNumber AND IsDeleted = 0;
 
-            IF @PhoneNumberId IS NULL
-                SET @Outcome = 'phone_number_not_found';
+            IF @MobileNumberId IS NULL
+                SET @Outcome = 'mobile_number_not_found';
             ELSE
             BEGIN
                 SELECT TOP 1 @MembershipUniqueId = UniqueId,
@@ -99,7 +99,7 @@ BEGIN
                             @Status = Status,
                             @CreationStatus = CreationStatus
                 FROM dbo.Memberships
-                WHERE PhoneNumberId = @PhoneNumberId
+                WHERE MobileNumberId = @MobileNumberId
                 AND IsDeleted = 0
                 ORDER BY CreatedAt DESC;
 
@@ -117,14 +117,14 @@ BEGIN
         -- 5. Handle result and logging
         IF @Outcome = 'success'
         BEGIN
-            EXEC dbo.SP_LogLoginAttempt @PhoneNumber, @Outcome, 1;
+            EXEC dbo.SP_LogLoginAttempt @MobileNumber, @Outcome, 1;
             DELETE FROM dbo.LoginAttempts
-            WHERE PhoneNumber = @PhoneNumber
+            WHERE MobileNumber = @MobileNumber
             AND (IsSuccess = 0 OR Outcome LIKE @LockoutPattern);
         END
         ELSE
         BEGIN
-            EXEC dbo.SP_LogLoginAttempt @PhoneNumber, @Outcome, 0;
+            EXEC dbo.SP_LogLoginAttempt @MobileNumber, @Outcome, 0;
             SET @MembershipUniqueId = NULL;
             SET @Status = NULL;
             SET @SecureKey = NULL;

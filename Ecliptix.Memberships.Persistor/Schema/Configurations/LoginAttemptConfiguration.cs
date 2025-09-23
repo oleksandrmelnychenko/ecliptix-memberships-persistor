@@ -18,7 +18,7 @@ public class LoginAttemptConfiguration : IEntityTypeConfiguration<LoginAttempt>
         builder.Property(e => e.MembershipId)
             .IsRequired();
 
-        builder.Property(e => e.PhoneNumber)
+        builder.Property(e => e.MobileNumber)
             .HasMaxLength(18);
 
         builder.Property(e => e.Outcome)
@@ -35,12 +35,6 @@ public class LoginAttemptConfiguration : IEntityTypeConfiguration<LoginAttempt>
             .HasMaxLength(20);
 
         builder.Property(e => e.ErrorMessage)
-            .HasMaxLength(500);
-
-        builder.Property(e => e.IpAddress)
-            .HasMaxLength(45);
-
-        builder.Property(e => e.UserAgent)
             .HasMaxLength(500);
 
         builder.Property(e => e.SessionId)
@@ -77,17 +71,13 @@ public class LoginAttemptConfiguration : IEntityTypeConfiguration<LoginAttempt>
             .HasFilter("IsDeleted = 0")
             .HasDatabaseName("IX_LoginAttempts_Status");
 
-        builder.HasIndex(e => e.IpAddress)
-            .HasFilter("IsDeleted = 0 AND IpAddress IS NOT NULL")
-            .HasDatabaseName("IX_LoginAttempts_IpAddress");
-
         builder.HasIndex(e => e.SessionId)
             .HasFilter("IsDeleted = 0 AND SessionId IS NOT NULL")
             .HasDatabaseName("IX_LoginAttempts_SessionId");
 
-        builder.HasIndex(e => e.PhoneNumber)
-            .HasFilter("IsDeleted = 0 AND PhoneNumber IS NOT NULL")
-            .HasDatabaseName("IX_LoginAttempts_PhoneNumber");
+        builder.HasIndex(e => e.MobileNumber)
+            .HasFilter("IsDeleted = 0 AND MobileNumber IS NOT NULL")
+            .HasDatabaseName("IX_LoginAttempts_MobileNumber");
 
         builder.HasIndex(e => e.Outcome)
             .HasFilter("IsDeleted = 0 AND Outcome IS NOT NULL")

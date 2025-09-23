@@ -16,15 +16,15 @@ PRINT '🧪 Starting verification flow testing...';
 GO
 
 -- Test variables
-DECLARE @TestPhoneNumber NVARCHAR(18) = '+1234567890';
+DECLARE @TestMobileNumber NVARCHAR(18) = '+1234567890';
 DECLARE @TestRegion NVARCHAR(2) = 'US';
 DECLARE @TestAppInstanceId UNIQUEIDENTIFIER = NEWID();
 DECLARE @TestDeviceId UNIQUEIDENTIFIER = NEWID();
 
 -- Output variables
-DECLARE @PhoneNumberId BIGINT;
-DECLARE @PhoneUniqueId UNIQUEIDENTIFIER;
-DECLARE @IsPhoneNewlyCreated BIT;
+DECLARE @MobileNumberId BIGINT;
+DECLARE @MobileUniqueId UNIQUEIDENTIFIER;
+DECLARE @IsMobileNewlyCreated BIT;
 
 DECLARE @DeviceRecordId BIGINT;
 DECLARE @DeviceUniqueId UNIQUEIDENTIFIER;
@@ -45,16 +45,16 @@ DECLARE @VerifyErrorMessage NVARCHAR(500);
 DECLARE @VerifiedAt DATETIME2(7);
 
 BEGIN TRY
-    PRINT '📱 Test 1: Ensure Phone Number';
+    PRINT '📱 Test 1: Ensure Mobile Number';
 
-    EXEC dbo.SP_EnsurePhoneNumber
-        @PhoneNumber = @TestPhoneNumber,
+    EXEC dbo.SP_EnsureMobileNumber
+        @MobileNumber = @TestMobileNumber,
         @Region = @TestRegion,
-        @PhoneNumberId = @PhoneNumberId OUTPUT,
-        @UniqueId = @PhoneUniqueId OUTPUT,
-        @IsNewlyCreated = @IsPhoneNewlyCreated OUTPUT;
+        @MobileNumberId = @MobileNumberId OUTPUT,
+        @UniqueId = @MobileUniqueId OUTPUT,
+        @IsNewlyCreated = @IsMobileNewlyCreated OUTPUT;
 
-    PRINT CONCAT('   ✅ Phone ID: ', @PhoneNumberId, ', Newly Created: ', CASE WHEN @IsPhoneNewlyCreated = 1 THEN 'Yes' ELSE 'No' END);
+    PRINT CONCAT('   ✅ Mobile ID: ', @MobileNumberId, ', Newly Created: ', CASE WHEN @IsMobileNewlyCreated = 1 THEN 'Yes' ELSE 'No' END);
 
     PRINT '📱 Test 2: Register App Device';
 
@@ -71,7 +71,7 @@ BEGIN TRY
     PRINT '🔐 Test 3: Initiate Verification Flow';
 
     EXEC dbo.SP_InitiateVerificationFlow
-        @PhoneNumber = @TestPhoneNumber,
+        @MobileNumber = @TestMobileNumber,
         @Region = @TestRegion,
         @AppDeviceId = @DeviceUniqueId,
         @Purpose = 'testing',
@@ -116,8 +116,6 @@ BEGIN TRY
     EXEC dbo.SP_VerifyOtpCode
         @FlowUniqueId = @FlowUniqueId,
         @OtpCode = @OtpCode,
-        @IpAddress = '127.0.0.1',
-        @UserAgent = 'Test Agent',
         @IsValid = @IsOtpValid OUTPUT,
         @Outcome = @VerifyOutcome OUTPUT,
         @ErrorMessage = @VerifyErrorMessage OUTPUT,
@@ -143,8 +141,6 @@ BEGIN TRY
     EXEC dbo.SP_VerifyOtpCode
         @FlowUniqueId = @FlowUniqueId,
         @OtpCode = '000000', -- Invalid code
-        @IpAddress = '127.0.0.1',
-        @UserAgent = 'Test Agent',
         @IsValid = @IsOtpValid OUTPUT,
         @Outcome = @VerifyOutcome OUTPUT,
         @ErrorMessage = @VerifyErrorMessage OUTPUT,
@@ -162,21 +158,21 @@ BEGIN TRY
     PRINT '📊 Test 7: Validate Data Integrity';
 
     -- Check that data was properly recorded
-    DECLARE @PhoneCount INT, @DeviceCount INT, @FlowCount INT, @OtpCount INT, @FailedAttemptCount INT;
+    DECLARE @MobileCount INT, @DeviceCount INT, @FlowCount INT, @OtpCount INT, @FailedAttemptCount INT;
 
-    SELECT @PhoneCount = COUNT(*) FROM dbo.MobileNumbers WHERE UniqueId = @PhoneUniqueId;
+    SELECT @MobileCount = COUNT(*) FROM dbo.MobileNumbers WHERE UniqueId = @MobileUniqueId;
     SELECT @DeviceCount = COUNT(*) FROM dbo.Devices WHERE UniqueId = @DeviceUniqueId;
     SELECT @FlowCount = COUNT(*) FROM dbo.VerificationFlows WHERE UniqueId = @FlowUniqueId;
     SELECT @OtpCount = COUNT(*) FROM dbo.OtpCodes WHERE VerificationFlowId = (SELECT Id FROM dbo.VerificationFlows WHERE UniqueId = @FlowUniqueId);
     SELECT @FailedAttemptCount = COUNT(*) FROM dbo.FailedOtpAttempts WHERE AttemptedValue = '000000';
 
-    PRINT CONCAT('   📱 Phone records: ', @PhoneCount, ' (expected: 1)');
+    PRINT CONCAT('   📱 Mobile records: ', @MobileCount, ' (expected: 1)');
     PRINT CONCAT('   📱 Device records: ', @DeviceCount, ' (expected: 1)');
     PRINT CONCAT('   🔐 Flow records: ', @FlowCount, ' (expected: 1)');
     PRINT CONCAT('   🔢 OTP records: ', @OtpCount, ' (expected: 1)');
     PRINT CONCAT('   ❌ Failed attempts: ', @FailedAttemptCount, ' (expected: 1)');
 
-    IF @PhoneCount = 1 AND @DeviceCount = 1 AND @FlowCount = 1 AND @OtpCount = 1 AND @FailedAttemptCount = 1
+    IF @MobileCount = 1 AND @DeviceCount = 1 AND @FlowCount = 1 AND @OtpCount = 1 AND @FailedAttemptCount = 1
     BEGIN
         PRINT '   ✅ All data integrity checks passed!';
     END

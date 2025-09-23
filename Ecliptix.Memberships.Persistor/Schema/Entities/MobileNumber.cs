@@ -11,7 +11,7 @@ public class MobileNumber
 
     [Required]
     [MaxLength(18)]
-    public string PhoneNumber { get; set; } = string.Empty;
+    public string Number { get; set; } = string.Empty;
 
     [MaxLength(2)]
     public string? Region { get; set; }

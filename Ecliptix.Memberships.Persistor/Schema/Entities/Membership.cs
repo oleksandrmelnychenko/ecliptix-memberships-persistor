@@ -10,7 +10,7 @@ public class Membership
     public long Id { get; set; }
 
     [Required]
-    public Guid PhoneNumberId { get; set; }
+    public Guid MobileNumberId { get; set; }
 
     [Required]
     public Guid AppDeviceId { get; set; }
@@ -35,8 +35,8 @@ public class Membership
 
     public Guid UniqueId { get; set; } = Guid.NewGuid();
 
-    [ForeignKey(nameof(PhoneNumberId))]
-    public virtual MobileNumber PhoneNumber { get; set; } = null!;
+    [ForeignKey(nameof(MobileNumberId))]
+    public virtual MobileNumber MobileNumber { get; set; } = null!;
 
     [ForeignKey(nameof(AppDeviceId))]
     public virtual Device AppDevice { get; set; } = null!;

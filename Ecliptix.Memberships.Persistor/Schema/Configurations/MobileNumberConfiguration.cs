@@ -15,7 +15,7 @@ public class MobileNumberConfiguration : IEntityTypeConfiguration<MobileNumber>
         builder.Property(e => e.Id)
             .UseIdentityColumn();
 
-        builder.Property(e => e.PhoneNumber)
+        builder.Property(e => e.Number)
             .IsRequired()
             .HasMaxLength(18);
 
@@ -38,13 +38,13 @@ public class MobileNumberConfiguration : IEntityTypeConfiguration<MobileNumber>
             .IsUnique()
             .HasDatabaseName("UQ_MobileNumbers_UniqueId");
 
-        builder.HasIndex(e => new { e.PhoneNumber, e.Region, e.IsDeleted })
+        builder.HasIndex(e => new { e.Number, e.Region, e.IsDeleted })
             .IsUnique()
             .HasDatabaseName("UQ_MobileNumbers_ActiveNumberRegion");
 
-        builder.HasIndex(e => new { e.PhoneNumber, e.Region })
+        builder.HasIndex(e => new { e.Number, e.Region })
             .HasFilter("IsDeleted = 0")
-            .HasDatabaseName("IX_MobileNumbers_PhoneNumber_Region");
+            .HasDatabaseName("IX_MobileNumbers_MobileNumber_Region");
 
         builder.HasIndex(e => e.Region)
             .HasFilter("IsDeleted = 0 AND Region IS NOT NULL")

@@ -88,4 +88,47 @@ public class MembershipService : IMembershipService
 
         return result;
     }
+
+    public async Task<StoredProcedureResult<LoginMembershipData>> SignInMembershipAsync(
+        string mobileNumber,
+        CancellationToken cancellationToken = default)
+    {
+        SqlParameter[] parameters =
+        [
+            new("@MobileNumber", mobileNumber),
+            new("@MembershipUniqueId", SqlDbType.UniqueIdentifier) { Direction = ParameterDirection.Output },
+            new("@Status", SqlDbType.NVarChar, 20) { Direction = ParameterDirection.Output },
+            new("@Outcome", SqlDbType.NVarChar, 100) { Direction = ParameterDirection.Output },
+            new("@SecureKey", SqlDbType.VarBinary, -1) { Direction = ParameterDirection.Output }
+        ];
+
+        StoredProcedureResult<LoginMembershipData> result = await _executor.ExecuteWithOutputAsync(
+            "dbo.SP_LoginMembership",
+            parameters,
+            outputParams => 
+            {
+                string outcome = outputParams[3].Value?.ToString() ?? "error";
+                string? errorMessage = outputParams[4].Value?.ToString();
+                
+                if (outcome == "success")
+                {
+                    return new LoginMembershipData
+                    {
+                        MembershipUniqueId = outputParams[1].Value as Guid? ?? Guid.Empty,
+                        Status = outputParams[2].Value?.ToString() ?? "",
+                        SecureKey = outputParams[4].Value as byte[] ?? []
+                    };
+                }
+                
+                throw new InvalidOperationException($"Failed to sign in: {outcome} - {errorMessage}");
+            },
+            cancellationToken);
+
+        if (!result.IsSuccess)
+        {
+            return StoredProcedureResult<LoginMembershipData>.Failure(result.Outcome, result.ErrorMessage);
+        }
+
+        return result;
+    }
 }
