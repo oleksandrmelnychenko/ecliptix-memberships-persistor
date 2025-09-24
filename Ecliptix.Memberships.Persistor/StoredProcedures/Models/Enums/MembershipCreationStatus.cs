@@ -4,5 +4,7 @@ public enum MembershipCreationStatus
 {
     OtpVerified,
     SecureKeySet,
-    PassphraseSet
+    PassphraseSet,
+    
+    Error
 }

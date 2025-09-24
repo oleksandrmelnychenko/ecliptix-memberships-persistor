@@ -42,7 +42,7 @@ public class MembershipService : IMembershipService
         ];
 
         return await _executor.ExecuteWithOutcomeAsync(
-            "dbo.sp_CreateMembership",
+            "dbo.SP_CreateMembership",
             parameters,
             outputParams =>
             {
@@ -51,8 +51,8 @@ public class MembershipService : IMembershipService
                 return new MembershipQueryData
                 {
                     UniqueIdentifier = (Guid)outputParams[4].Value,
-                    ActivityStatus = ProcedureResultMapper.ToActivityStatus(status),
-                    CreationStatus = ProcedureResultMapper.ToCreationStatus(creationStatus),
+                    ActivityStatus = ProcedureResultMapper.ToActivityStatus(status, _logger),
+                    CreationStatus = ProcedureResultMapper.ToCreationStatus(creationStatus, _logger),
                 };
             },
             outcomeIndex: 7,
@@ -84,7 +84,7 @@ public class MembershipService : IMembershipService
                 return new MembershipQueryData
                 {
                     UniqueIdentifier = (Guid)outputParams[1].Value,
-                    ActivityStatus = ProcedureResultMapper.ToActivityStatus(activity),
+                    ActivityStatus = ProcedureResultMapper.ToActivityStatus(activity, _logger),
                     SecureKey = outputParams[3].Value as byte[] ?? []
                 };
             },
@@ -121,8 +121,8 @@ public class MembershipService : IMembershipService
                 return new MembershipQueryData
                 {
                     UniqueIdentifier = (Guid)outputParams[2].Value,
-                    ActivityStatus = ProcedureResultMapper.ToActivityStatus(status),
-                    CreationStatus = ProcedureResultMapper.ToCreationStatus(creationStatus)
+                    ActivityStatus = ProcedureResultMapper.ToActivityStatus(status, _logger),
+                    CreationStatus = ProcedureResultMapper.ToCreationStatus(creationStatus, _logger),
                 };
             },
             outcomeIndex: 5,
