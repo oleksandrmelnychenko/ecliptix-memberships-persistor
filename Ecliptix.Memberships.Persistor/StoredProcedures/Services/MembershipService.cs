@@ -19,7 +19,7 @@ public class MembershipService : IMembershipService
         _logger = logger;
     }
 
-    public async Task<StoredProcedureResult<CreateMembershipData>> CreateMembershipAsync(
+    public async Task<StoredProcedureResult<MembershipQueryData>> CreateMembershipAsync(
         Guid verificationFlowIdentifier,
         long connectId,
         Guid otpIdentifier,
@@ -44,18 +44,24 @@ public class MembershipService : IMembershipService
         return await _executor.ExecuteWithOutcomeAsync(
             "dbo.sp_CreateMembership",
             parameters,
-            outputParams => new CreateMembershipData(
-                MembershipUniqueId: (Guid)outputParams[4].Value,
-                Status: outputParams[5].Value?.ToString() ?? "",
-                CreationStatus: outputParams[6].Value?.ToString() ?? ""
-            ),
+            outputParams =>
+            {
+                string? status = outputParams[5].Value?.ToString();
+                string? creationStatus = outputParams[6].Value?.ToString();
+                return new MembershipQueryData
+                {
+                    UniqueIdentifier = (Guid)outputParams[4].Value,
+                    ActivityStatus = ProcedureResultMapper.ToActivityStatus(status),
+                    CreationStatus = ProcedureResultMapper.ToCreationStatus(creationStatus),
+                };
+            },
             outcomeIndex: 7,
             errorIndex: 8,
             cancellationToken
         );
     }
 
-    public async Task<StoredProcedureResult<LoginMembershipData>> SignInMembershipAsync(
+    public async Task<StoredProcedureResult<MembershipQueryData>> SignInMembershipAsync(
         string mobileNumber,
         CancellationToken cancellationToken = default)
     {
@@ -72,13 +78,55 @@ public class MembershipService : IMembershipService
         return await _executor.ExecuteWithOutcomeAsync(
             "dbo.SP_LoginMembership",
             parameters,
-            outputParams => new LoginMembershipData(
-                MembershipUniqueId: (Guid)outputParams[1].Value,
-                Status: outputParams[2].Value?.ToString() ?? "",
-                SecureKey: outputParams[3].Value as byte[] ?? Array.Empty<byte>()
-            ),
+            outputParams =>
+            {
+                string? activity = outputParams[2].Value?.ToString();
+                return new MembershipQueryData
+                {
+                    UniqueIdentifier = (Guid)outputParams[1].Value,
+                    ActivityStatus = ProcedureResultMapper.ToActivityStatus(activity),
+                    SecureKey = outputParams[3].Value as byte[] ?? []
+                };
+            },
             outcomeIndex: 4,
             errorIndex: 5,
+            cancellationToken
+        );
+    }
+
+    public async Task<StoredProcedureResult<MembershipQueryData>> UpdateMembershipSecureKeyAsync(
+        Guid membershipUniqueId,
+        byte[] secretKey,
+        CancellationToken cancellationToken = default)
+    {
+        SqlParameter[] parameters =
+        [
+            SqlParameterHelper.In("@MembershipUniqueId", membershipUniqueId),
+            SqlParameterHelper.In("@SecureKey", secretKey),
+            SqlParameterHelper.Out("@MembershipUniqueId", SqlDbType.UniqueIdentifier),
+            SqlParameterHelper.Out("@Status", SqlDbType.NVarChar, 50),
+            SqlParameterHelper.Out("@CreationStatus", SqlDbType.NVarChar, 50),
+            SqlParameterHelper.Out("@Outcome", SqlDbType.NVarChar, 100),
+            SqlParameterHelper.Out("@ErrorMessage", SqlDbType.NVarChar, 500)
+        ];
+
+        return await _executor.ExecuteWithOutcomeAsync(
+            "dbo.SP_UpdateMembershipSecureKey",
+            parameters,
+            outputParams =>
+            {
+                string? status = outputParams[3].Value?.ToString();
+                string? creationStatus = outputParams[4].Value?.ToString();
+                
+                return new MembershipQueryData
+                {
+                    UniqueIdentifier = (Guid)outputParams[2].Value,
+                    ActivityStatus = ProcedureResultMapper.ToActivityStatus(status),
+                    CreationStatus = ProcedureResultMapper.ToCreationStatus(creationStatus)
+                };
+            },
+            outcomeIndex: 5,
+            errorIndex: 6,
             cancellationToken
         );
     }

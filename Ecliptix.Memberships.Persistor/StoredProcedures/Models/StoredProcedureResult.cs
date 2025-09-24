@@ -32,5 +32,11 @@ public record DeviceRegistrationData(long DeviceRecordId, Guid DeviceUniqueId, b
 public record VerificationFlowData(Guid FlowUniqueId, DateTime? ExpiresAt);
 public record OtpGenerationData(string OtpCode, Guid OtpUniqueId, DateTime ExpiresAt);
 public record OtpVerificationData(bool IsValid, DateTime? VerifiedAt, int RemainingAttempts);
-public record CreateMembershipData(Guid MembershipUniqueId, string Status, string CreationStatus);
-public record LoginMembershipData(Guid MembershipUniqueId, string Status, byte[]? SecureKey);
+
+public record MembershipQueryData
+{
+    public required Guid UniqueIdentifier { get; init; }
+    public required MembershipActivityStatus ActivityStatus { get; init; }
+    public MembershipCreationStatus CreationStatus { get; init; }
+    public byte[] SecureKey { get; init; } = [];
+}

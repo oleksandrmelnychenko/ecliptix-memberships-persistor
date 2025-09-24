@@ -175,7 +175,7 @@ public class StoredProcedureExecutor : IStoredProcedureExecutor
             
             string? outcomeRaw = parameters[outcomeIndex].Value?.ToString();
             string? errorMessage = parameters[errorIndex].Value?.ToString();
-            ProcedureOutcome outcome = OutcomeParser.Parse(outcomeRaw);
+            ProcedureOutcome outcome = ProcedureResultMapper.ToProcedureOutcome(outcomeRaw);
 
             if (outcome == ProcedureOutcome.Success)
             {

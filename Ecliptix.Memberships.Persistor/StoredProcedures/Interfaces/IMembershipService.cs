@@ -5,7 +5,7 @@ namespace Ecliptix.Memberships.Persistor.StoredProcedures.Interfaces;
 
 public interface IMembershipService
 {
-    Task<StoredProcedureResult<CreateMembershipData>> CreateMembershipAsync(
+    Task<StoredProcedureResult<MembershipQueryData>> CreateMembershipAsync(
         Guid verificationFlowIdentifier,
         long connectId,
         Guid otpIdentifier,
