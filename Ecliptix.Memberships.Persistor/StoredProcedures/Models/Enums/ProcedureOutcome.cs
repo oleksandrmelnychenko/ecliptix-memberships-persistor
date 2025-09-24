@@ -8,6 +8,8 @@ public enum ProcedureOutcome
     NoData,
     SqlError,
     AlreadyExists,
+    RateLimitExceeded,
+    MembershipAlreadyExists,
     Error,
     Invalid
 }

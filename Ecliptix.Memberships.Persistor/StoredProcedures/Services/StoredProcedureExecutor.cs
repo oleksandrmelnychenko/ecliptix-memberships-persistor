@@ -30,14 +30,13 @@ public class StoredProcedureExecutor : IStoredProcedureExecutor
         {
             _logger.LogDebug("Executing stored procedure: {ProcedureName}", procedureName);
 
-            using SqlConnection connection = new SqlConnection(_connectionString);
+            await using SqlConnection connection = new SqlConnection(_connectionString);
             await connection.OpenAsync(cancellationToken);
 
-            using SqlCommand command = new SqlCommand(procedureName, connection)
-            {
-                CommandType = System.Data.CommandType.StoredProcedure,
-                CommandTimeout = 30
-            };
+            await using SqlCommand command = new SqlCommand(procedureName, connection);
+            
+            command.CommandType = System.Data.CommandType.StoredProcedure;
+            command.CommandTimeout = 30;
 
             if (parameters != null)
             {
@@ -78,16 +77,14 @@ public class StoredProcedureExecutor : IStoredProcedureExecutor
         {
             _logger.LogDebug("Executing stored procedure with output: {ProcedureName}", procedureName);
 
-            using SqlConnection connection = new SqlConnection(_connectionString);
+            await using SqlConnection connection = new SqlConnection(_connectionString);
             await connection.OpenAsync(cancellationToken);
 
-            using SqlCommand command = new SqlCommand(procedureName, connection)
-            {
-                CommandType = System.Data.CommandType.StoredProcedure,
-                CommandTimeout = 30
-            };
+            await using SqlCommand command = new SqlCommand(procedureName, connection);
+            command.CommandType = System.Data.CommandType.StoredProcedure;
+            command.CommandTimeout = 30;
 
-            if (parameters != null)
+            if (parameters.Length > 0)
             {
                 command.Parameters.AddRange(parameters);
             }
@@ -120,16 +117,14 @@ public class StoredProcedureExecutor : IStoredProcedureExecutor
         {
             _logger.LogDebug("Executing non-query stored procedure: {ProcedureName}", procedureName);
 
-            using SqlConnection connection = new SqlConnection(_connectionString);
+            await using SqlConnection connection = new SqlConnection(_connectionString);
             await connection.OpenAsync(cancellationToken);
 
-            using SqlCommand command = new SqlCommand(procedureName, connection)
-            {
-                CommandType = System.Data.CommandType.StoredProcedure,
-                CommandTimeout = 30
-            };
+            await using SqlCommand command = new SqlCommand(procedureName, connection);
+            command.CommandType = System.Data.CommandType.StoredProcedure;
+            command.CommandTimeout = 30;
 
-            if (parameters != null)
+            if (parameters.Length > 0)
             {
                 command.Parameters.AddRange(parameters);
             }
@@ -167,11 +162,9 @@ public class StoredProcedureExecutor : IStoredProcedureExecutor
             await using SqlConnection connection = new SqlConnection(_connectionString);
             await connection.OpenAsync();
 
-            await using SqlCommand command = new SqlCommand(procedureName, connection)
-            {
-                CommandType = System.Data.CommandType.StoredProcedure,
-                CommandTimeout = 30
-            };
+            await using SqlCommand command = new SqlCommand(procedureName, connection);
+            command.CommandType = System.Data.CommandType.StoredProcedure;
+            command.CommandTimeout = 30;
 
             if (parameters.Length > 0)
             {

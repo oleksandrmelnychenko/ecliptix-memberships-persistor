@@ -130,25 +130,21 @@ public class VerificationService : IVerificationService
             SqlParameterHelper.Out("@VerifiedAt", SqlDbType.DateTime2)
         ];
 
-        StoredProcedureResult<OtpVerificationData> result = await _executor.ExecuteWithOutputAsync(
+        return await _executor.ExecuteWithOutcomeAsync(
             "dbo.SP_VerifyOtpCode",
             parameters,
             outputParams =>
             {
-                bool isValid = (bool)outputParams[2].Value;
                 string outcome = outputParams[3].Value?.ToString() ?? "invalid";
-                string? errorMessage = outputParams[4].Value?.ToString();
-                DateTime? verifiedAt = outputParams[5].Value != DBNull.Value ? (DateTime?)outputParams[7].Value : null;
-
                 return new OtpVerificationData(
-                    IsValid: isValid,
-                    VerifiedAt: verifiedAt,
-                    RemainingAttempts: outcome.Contains("attempts remaining") ?
-                        int.Parse(outcome.Split(" ")[0]) : 0
+                    IsValid: (bool)outputParams[2].Value,
+                    VerifiedAt: outputParams[5].Value != DBNull.Value ? (DateTime?)outputParams[7].Value : null,
+                    RemainingAttempts: outcome.Contains("attempts remaining") ? int.Parse(outcome.Split(" ")[0]) : 0
                 );
             },
-            cancellationToken);
-
-        return result;
+            outcomeIndex: 3,
+            errorIndex: 4,
+            cancellationToken
+        );
     }
 }
