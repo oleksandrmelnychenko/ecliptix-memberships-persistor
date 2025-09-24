@@ -37,11 +37,11 @@ public class VerificationService : IVerificationService
         return await _executor.ExecuteWithOutputAsync(
             "dbo.SP_EnsureMobileNumber",
             parameters,
-            outputParams => new PhoneNumberData(
-                PhoneNumberId: (long)outputParams[2].Value,
-                UniqueId: (Guid)outputParams[3].Value,
-                IsNewlyCreated: (bool)outputParams[4].Value
-            ),
+            outputParams => new PhoneNumberData{
+                PhoneNumberId = (long)outputParams[2].Value,
+                UniqueId = (Guid)outputParams[3].Value,
+                IsNewlyCreated = (bool)outputParams[4].Value
+            },
             cancellationToken);
     }
 
@@ -70,10 +70,10 @@ public class VerificationService : IVerificationService
         return await _executor.ExecuteWithOutcomeAsync(
             "dbo.SP_InitiateVerificationFlow",
             parameters,
-            outputParams => new VerificationFlowData(
-                FlowUniqueId: (Guid)outputParams[5].Value,
-                ExpiresAt: DateTime.UtcNow.AddMinutes(15)
-            ),
+            outputParams => new VerificationFlowData{
+                FlowUniqueId = (Guid)outputParams[5].Value,
+                ExpiresAt = DateTime.UtcNow.AddMinutes(15)
+            },
             outcomeIndex: 6,
             errorIndex: 7,
             cancellationToken
@@ -102,11 +102,11 @@ public class VerificationService : IVerificationService
         return await _executor.ExecuteWithOutcomeAsync(
             "dbo.SP_GenerateOtpCode",
             parameters,
-            outputParams => new OtpGenerationData(
-                OtpCode: outputParams[3].Value?.ToString() ?? "",
-                OtpUniqueId: (Guid)outputParams[4].Value,
-                ExpiresAt: DateTime.UtcNow.AddMinutes(expiryMinutes)
-            ),
+            outputParams => new OtpGenerationData{
+                OtpCode = outputParams[3].Value?.ToString() ?? "",
+                OtpUniqueId = (Guid)outputParams[4].Value,
+                ExpiresAt = DateTime.UtcNow.AddMinutes(expiryMinutes)
+            },
             outcomeIndex: 5,
             errorIndex: 6,
             cancellationToken
@@ -136,11 +136,11 @@ public class VerificationService : IVerificationService
             outputParams =>
             {
                 string outcome = outputParams[3].Value?.ToString() ?? "invalid";
-                return new OtpVerificationData(
-                    IsValid: (bool)outputParams[2].Value,
-                    VerifiedAt: outputParams[5].Value != DBNull.Value ? (DateTime?)outputParams[7].Value : null,
-                    RemainingAttempts: outcome.Contains("attempts remaining") ? int.Parse(outcome.Split(" ")[0]) : 0
-                );
+                return new OtpVerificationData{
+                    IsValid = (bool)outputParams[2].Value,
+                    VerifiedAt = outputParams[5].Value != DBNull.Value ? (DateTime?)outputParams[7].Value : null,
+                    RemainingAttempts = outcome.Contains("attempts remaining") ? int.Parse(outcome.Split(" ")[0]) : 0
+                };
             },
             outcomeIndex: 3,
             errorIndex: 4,

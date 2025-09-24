@@ -39,11 +39,12 @@ public class AppDeviceService
         return await _executor.ExecuteWithOutputAsync(
             "dbo.SP_RegisterAppDevice",
             parameters,
-            outputParams => new DeviceRegistrationData(
-                DeviceRecordId: (long)outputParams[4].Value,
-                DeviceUniqueId: (Guid)outputParams[3].Value,
-                IsNewlyCreated: (bool)outputParams[5].Value
-            ),
+            outputParams => new DeviceRegistrationData{
+                DeviceRecordId = (long)outputParams[4].Value,
+                DeviceUniqueId = (Guid)outputParams[3].Value,
+                IsNewlyCreated = (bool)outputParams[5].Value
+                
+            },
             cancellationToken);
     }
 }
