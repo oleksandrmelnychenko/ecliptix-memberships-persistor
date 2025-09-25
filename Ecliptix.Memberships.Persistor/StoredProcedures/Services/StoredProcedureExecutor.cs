@@ -38,7 +38,7 @@ public class StoredProcedureExecutor : IStoredProcedureExecutor
             command.CommandType = System.Data.CommandType.StoredProcedure;
             command.CommandTimeout = 30;
 
-            if (parameters != null)
+            if (parameters.Length > 0)
             {
                 command.Parameters.AddRange(parameters);
             }

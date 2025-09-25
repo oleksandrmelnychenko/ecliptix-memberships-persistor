@@ -13,7 +13,7 @@ public static class ProcedureResultMapper
         ParseEnum(value, MembershipActivityStatus.Error, logger);
 
     public static MembershipCreationStatus ToCreationStatus(string? value, ILogger logger) =>
-        ParseEnum(value, MembershipCreationStatus.SecureKeySet, logger);
+        ParseEnum(value, MembershipCreationStatus.Error, logger);
     
     private static string NormalizeEnumValue(string? value)
     {
@@ -31,7 +31,7 @@ public static class ProcedureResultMapper
         return normalized;
     }
 
-    public static T ParseEnum<T>(string? value, T fallback, ILogger logger) where T : struct, Enum
+    private static T ParseEnum<T>(string? value, T fallback, ILogger logger) where T : struct, Enum
     {
         string normalized = NormalizeEnumValue(value);
         
