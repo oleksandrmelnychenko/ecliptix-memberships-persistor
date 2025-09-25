@@ -4,16 +4,13 @@ using Ecliptix.Memberships.Persistor.Schema.Entities;
 
 namespace Ecliptix.Memberships.Persistor.Schema.Configurations;
 
-public class FailedOtpAttemptConfiguration : IEntityTypeConfiguration<FailedOtpAttempt>
+public class FailedOtpAttemptConfiguration : EntityBaseMap<FailedOtpAttempt>
 {
-    public void Configure(EntityTypeBuilder<FailedOtpAttempt> builder)
+    public override void Map(EntityTypeBuilder<FailedOtpAttempt> builder)
     {
+        base.Map(builder);
+        
         builder.ToTable("FailedOtpAttempts");
-
-        builder.HasKey(e => e.Id);
-
-        builder.Property(e => e.Id)
-            .UseIdentityColumn();
 
         builder.Property(e => e.OtpRecordId)
             .IsRequired();
@@ -28,22 +25,6 @@ public class FailedOtpAttemptConfiguration : IEntityTypeConfiguration<FailedOtpA
 
         builder.Property(e => e.AttemptedAt)
             .HasDefaultValueSql("GETUTCDATE()");
-
-        builder.Property(e => e.CreatedAt)
-            .HasDefaultValueSql("GETUTCDATE()");
-
-        builder.Property(e => e.UpdatedAt)
-            .HasDefaultValueSql("GETUTCDATE()");
-
-        builder.Property(e => e.IsDeleted)
-            .HasDefaultValue(false);
-
-        builder.Property(e => e.UniqueId)
-            .HasDefaultValueSql("NEWID()");
-
-        builder.HasIndex(e => e.UniqueId)
-            .IsUnique()
-            .HasDatabaseName("UQ_FailedOtpAttempts_UniqueId");
 
         builder.HasIndex(e => e.OtpRecordId)
             .HasDatabaseName("IX_FailedOtpAttempts_OtpRecordId");

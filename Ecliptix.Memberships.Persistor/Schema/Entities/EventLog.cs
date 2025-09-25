@@ -4,11 +4,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Ecliptix.Memberships.Persistor.Schema.Entities;
 
 [Table("EventLogs")]
-public class EventLog
+public class EventLog : EntityBase
 {
-    [Key]
-    public long Id { get; set; }
-
     [Required]
     [MaxLength(50)]
     public string EventType { get; set; } = string.Empty;
@@ -35,12 +32,4 @@ public class EventLog
     public string? SessionId { get; set; }
 
     public DateTime OccurredAt { get; set; } = DateTime.UtcNow;
-
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-
-    public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
-
-    public bool IsDeleted { get; set; } = false;
-
-    public Guid UniqueId { get; set; } = Guid.NewGuid();
 }

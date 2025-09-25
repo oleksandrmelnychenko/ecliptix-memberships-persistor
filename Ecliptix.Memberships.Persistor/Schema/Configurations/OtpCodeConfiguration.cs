@@ -4,16 +4,13 @@ using Ecliptix.Memberships.Persistor.Schema.Entities;
 
 namespace Ecliptix.Memberships.Persistor.Schema.Configurations;
 
-public class OtpCodeConfiguration : IEntityTypeConfiguration<OtpCode>
+public class OtpCodeConfiguration : EntityBaseMap<OtpCode>
 {
-    public void Configure(EntityTypeBuilder<OtpCode> builder)
+    public override void Map(EntityTypeBuilder<OtpCode> builder)
     {
+        base.Map(builder);
+        
         builder.ToTable("OtpCodes");
-
-        builder.HasKey(e => e.Id);
-
-        builder.Property(e => e.Id)
-            .UseIdentityColumn();
 
         builder.Property(e => e.VerificationFlowId)
             .IsRequired();
@@ -33,24 +30,8 @@ public class OtpCodeConfiguration : IEntityTypeConfiguration<OtpCode>
         builder.Property(e => e.AttemptCount)
             .HasDefaultValue((short)0);
 
-        builder.Property(e => e.CreatedAt)
-            .HasDefaultValueSql("GETUTCDATE()");
-
-        builder.Property(e => e.UpdatedAt)
-            .HasDefaultValueSql("GETUTCDATE()");
-
-        builder.Property(e => e.IsDeleted)
-            .HasDefaultValue(false);
-
-        builder.Property(e => e.UniqueId)
-            .HasDefaultValueSql("NEWID()");
-
         builder.ToTable(t => t.HasCheckConstraint("CHK_OtpCodes_Status",
             "Status IN ('active', 'used', 'expired', 'invalid')"));
-
-        builder.HasIndex(e => e.UniqueId)
-            .IsUnique()
-            .HasDatabaseName("UQ_OtpCodes_UniqueId");
 
         builder.HasIndex(e => e.VerificationFlowId)
             .HasDatabaseName("IX_OtpCodes_VerificationFlowId");
@@ -62,12 +43,7 @@ public class OtpCodeConfiguration : IEntityTypeConfiguration<OtpCode>
         builder.HasIndex(e => e.ExpiresAt)
             .HasFilter("IsDeleted = 0")
             .HasDatabaseName("IX_OtpCodes_ExpiresAt");
-
-        builder.HasIndex(e => e.CreatedAt)
-            .IsDescending()
-            .HasFilter("IsDeleted = 0")
-            .HasDatabaseName("IX_OtpCodes_CreatedAt");
-
+        
         builder.HasOne(e => e.VerificationFlow)
             .WithMany(v => v.OtpCodes)
             .HasForeignKey(e => e.VerificationFlowId)

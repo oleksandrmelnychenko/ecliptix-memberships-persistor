@@ -4,16 +4,13 @@ using Ecliptix.Memberships.Persistor.Schema.Entities;
 
 namespace Ecliptix.Memberships.Persistor.Schema.Configurations;
 
-public class VerificationFlowConfiguration : IEntityTypeConfiguration<VerificationFlow>
+public class VerificationFlowConfiguration : EntityBaseMap<VerificationFlow>
 {
-    public void Configure(EntityTypeBuilder<VerificationFlow> builder)
+    public override void Map(EntityTypeBuilder<VerificationFlow> builder)
     {
+        base.Map(builder);
+        
         builder.ToTable("VerificationFlows");
-
-        builder.HasKey(e => e.Id);
-
-        builder.Property(e => e.Id)
-            .UseIdentityColumn();
 
         builder.Property(e => e.MobileNumberId)
             .IsRequired();
@@ -37,27 +34,11 @@ public class VerificationFlowConfiguration : IEntityTypeConfiguration<Verificati
         builder.Property(e => e.OtpCount)
             .HasDefaultValue((short)0);
 
-        builder.Property(e => e.CreatedAt)
-            .HasDefaultValueSql("GETUTCDATE()");
-
-        builder.Property(e => e.UpdatedAt)
-            .HasDefaultValueSql("GETUTCDATE()");
-
-        builder.Property(e => e.IsDeleted)
-            .HasDefaultValue(false);
-
-        builder.Property(e => e.UniqueId)
-            .HasDefaultValueSql("NEWID()");
-
         builder.ToTable(t => t.HasCheckConstraint("CHK_VerificationFlows_Status",
             "Status IN ('pending', 'verified', 'expired', 'failed')"));
 
         builder.ToTable(t => t.HasCheckConstraint("CHK_VerificationFlows_Purpose",
             "Purpose IN ('unspecified', 'registration', 'login', 'password_recovery', 'update_phone')"));
-
-        builder.HasIndex(e => e.UniqueId)
-            .IsUnique()
-            .HasDatabaseName("UQ_VerificationFlows_UniqueId");
 
         builder.HasIndex(e => e.MobileNumberId)
             .HasDatabaseName("IX_VerificationFlows_MobileNumberId");

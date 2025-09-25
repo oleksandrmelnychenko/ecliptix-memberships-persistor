@@ -4,16 +4,13 @@ using Ecliptix.Memberships.Persistor.Schema.Entities;
 
 namespace Ecliptix.Memberships.Persistor.Schema.Configurations;
 
-public class MobileDeviceConfiguration : IEntityTypeConfiguration<MobileDevice>
+public class MobileDeviceConfiguration : EntityBaseMap<MobileDevice>
 {
-    public void Configure(EntityTypeBuilder<MobileDevice> builder)
+    public override void Map(EntityTypeBuilder<MobileDevice> builder)
     {
+        base.Map(builder);
+        
         builder.ToTable("MobileDevices");
-
-        builder.HasKey(e => e.Id);
-
-        builder.Property(e => e.Id)
-            .UseIdentityColumn();
 
         builder.Property(e => e.MobileNumberId)
             .IsRequired();
@@ -27,22 +24,6 @@ public class MobileDeviceConfiguration : IEntityTypeConfiguration<MobileDevice>
 
         builder.Property(e => e.IsActive)
             .HasDefaultValue(true);
-
-        builder.Property(e => e.CreatedAt)
-            .HasDefaultValueSql("GETUTCDATE()");
-
-        builder.Property(e => e.UpdatedAt)
-            .HasDefaultValueSql("GETUTCDATE()");
-
-        builder.Property(e => e.IsDeleted)
-            .HasDefaultValue(false);
-
-        builder.Property(e => e.UniqueId)
-            .HasDefaultValueSql("NEWID()");
-
-        builder.HasIndex(e => e.UniqueId)
-            .IsUnique()
-            .HasDatabaseName("UQ_MobileDevices_UniqueId");
 
         builder.HasIndex(e => new { e.MobileNumberId, e.DeviceId })
             .IsUnique()

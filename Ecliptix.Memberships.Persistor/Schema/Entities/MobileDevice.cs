@@ -4,11 +4,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Ecliptix.Memberships.Persistor.Schema.Entities;
 
 [Table("MobileDevices")]
-public class MobileDevice
+public class MobileDevice : EntityBase
 {
-    [Key]
-    public long Id { get; set; }
-
     [Required]
     public long MobileNumberId { get; set; }
 
@@ -21,14 +18,6 @@ public class MobileDevice
     public bool IsActive { get; set; } = true;
 
     public DateTime? LastUsedAt { get; set; }
-
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-
-    public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
-
-    public bool IsDeleted { get; set; } = false;
-
-    public Guid UniqueId { get; set; } = Guid.NewGuid();
 
     [ForeignKey(nameof(MobileNumberId))]
     public virtual MobileNumber MobileNumber { get; set; } = null!;

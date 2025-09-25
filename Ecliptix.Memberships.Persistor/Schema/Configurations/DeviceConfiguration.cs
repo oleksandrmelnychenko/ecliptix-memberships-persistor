@@ -4,16 +4,13 @@ using Ecliptix.Memberships.Persistor.Schema.Entities;
 
 namespace Ecliptix.Memberships.Persistor.Schema.Configurations;
 
-public class DeviceConfiguration : IEntityTypeConfiguration<Device>
+public class DeviceConfiguration : EntityBaseMap<Device>
 {
-    public void Configure(EntityTypeBuilder<Device> builder)
+    public override void Map(EntityTypeBuilder<Device> builder)
     {
+        base.Map(builder);
+        
         builder.ToTable("Devices");
-
-        builder.HasKey(e => e.Id);
-
-        builder.Property(e => e.Id)
-            .UseIdentityColumn();
 
         builder.Property(e => e.AppInstanceId)
             .IsRequired();
@@ -23,22 +20,6 @@ public class DeviceConfiguration : IEntityTypeConfiguration<Device>
 
         builder.Property(e => e.DeviceType)
             .HasDefaultValue(1);
-
-        builder.Property(e => e.CreatedAt)
-            .HasDefaultValueSql("GETUTCDATE()");
-
-        builder.Property(e => e.UpdatedAt)
-            .HasDefaultValueSql("GETUTCDATE()");
-
-        builder.Property(e => e.IsDeleted)
-            .HasDefaultValue(false);
-
-        builder.Property(e => e.UniqueId)
-            .HasDefaultValueSql("NEWID()");
-
-        builder.HasIndex(e => e.UniqueId)
-            .IsUnique()
-            .HasDatabaseName("UQ_Devices_UniqueId");
 
         builder.HasIndex(e => e.DeviceId)
             .IsUnique()
@@ -50,10 +31,5 @@ public class DeviceConfiguration : IEntityTypeConfiguration<Device>
         builder.HasIndex(e => e.DeviceType)
             .HasFilter("IsDeleted = 0")
             .HasDatabaseName("IX_Devices_DeviceType");
-
-        builder.HasIndex(e => e.CreatedAt)
-            .IsDescending()
-            .HasFilter("IsDeleted = 0")
-            .HasDatabaseName("IX_Devices_CreatedAt");
     }
 }

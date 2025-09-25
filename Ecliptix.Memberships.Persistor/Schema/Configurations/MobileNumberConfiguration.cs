@@ -4,16 +4,13 @@ using Ecliptix.Memberships.Persistor.Schema.Entities;
 
 namespace Ecliptix.Memberships.Persistor.Schema.Configurations;
 
-public class MobileNumberConfiguration : IEntityTypeConfiguration<MobileNumber>
+public class MobileNumberConfiguration : EntityBaseMap<MobileNumber>
 {
-    public void Configure(EntityTypeBuilder<MobileNumber> builder)
+    public override void Map(EntityTypeBuilder<MobileNumber> builder)
     {
+        base.Map(builder);
+        
         builder.ToTable("MobileNumbers");
-
-        builder.HasKey(e => e.Id);
-
-        builder.Property(e => e.Id)
-            .UseIdentityColumn();
 
         builder.Property(e => e.Number)
             .IsRequired()
@@ -21,22 +18,6 @@ public class MobileNumberConfiguration : IEntityTypeConfiguration<MobileNumber>
 
         builder.Property(e => e.Region)
             .HasMaxLength(2);
-
-        builder.Property(e => e.CreatedAt)
-            .HasDefaultValueSql("GETUTCDATE()");
-
-        builder.Property(e => e.UpdatedAt)
-            .HasDefaultValueSql("GETUTCDATE()");
-
-        builder.Property(e => e.IsDeleted)
-            .HasDefaultValue(false);
-
-        builder.Property(e => e.UniqueId)
-            .HasDefaultValueSql("NEWID()");
-
-        builder.HasIndex(e => e.UniqueId)
-            .IsUnique()
-            .HasDatabaseName("UQ_MobileNumbers_UniqueId");
 
         builder.HasIndex(e => new { e.Number, e.Region, e.IsDeleted })
             .IsUnique()

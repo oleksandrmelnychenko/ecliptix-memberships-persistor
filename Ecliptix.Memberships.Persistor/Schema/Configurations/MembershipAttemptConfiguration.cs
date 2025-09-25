@@ -4,16 +4,13 @@ using Ecliptix.Memberships.Persistor.Schema.Entities;
 
 namespace Ecliptix.Memberships.Persistor.Schema.Configurations;
 
-public class MembershipAttemptConfiguration : IEntityTypeConfiguration<MembershipAttempt>
+public class MembershipAttemptConfiguration : EntityBaseMap<MembershipAttempt>
 {
-    public void Configure(EntityTypeBuilder<MembershipAttempt> builder)
+    public override void Map(EntityTypeBuilder<MembershipAttempt> builder)
     {
+        base.Map(builder);
+        
         builder.ToTable("MembershipAttempts");
-
-        builder.HasKey(e => e.Id);
-
-        builder.Property(e => e.Id)
-            .UseIdentityColumn();
 
         builder.Property(e => e.MembershipId)
             .IsRequired();
@@ -31,22 +28,6 @@ public class MembershipAttemptConfiguration : IEntityTypeConfiguration<Membershi
 
         builder.Property(e => e.AttemptedAt)
             .HasDefaultValueSql("GETUTCDATE()");
-
-        builder.Property(e => e.CreatedAt)
-            .HasDefaultValueSql("GETUTCDATE()");
-
-        builder.Property(e => e.UpdatedAt)
-            .HasDefaultValueSql("GETUTCDATE()");
-
-        builder.Property(e => e.IsDeleted)
-            .HasDefaultValue(false);
-
-        builder.Property(e => e.UniqueId)
-            .HasDefaultValueSql("NEWID()");
-
-        builder.HasIndex(e => e.UniqueId)
-            .IsUnique()
-            .HasDatabaseName("UQ_MembershipAttempts_UniqueId");
 
         builder.HasIndex(e => e.MembershipId)
             .HasDatabaseName("IX_MembershipAttempts_MembershipId");

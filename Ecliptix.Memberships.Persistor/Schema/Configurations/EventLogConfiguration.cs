@@ -4,16 +4,13 @@ using Ecliptix.Memberships.Persistor.Schema.Entities;
 
 namespace Ecliptix.Memberships.Persistor.Schema.Configurations;
 
-public class EventLogConfiguration : IEntityTypeConfiguration<EventLog>
+public class EventLogConfiguration : EntityBaseMap<EventLog>
 {
-    public void Configure(EntityTypeBuilder<EventLog> builder)
+    public override void Map(EntityTypeBuilder<EventLog> builder)
     {
+        base.Map(builder);
+        
         builder.ToTable("EventLogs");
-
-        builder.HasKey(e => e.Id);
-
-        builder.Property(e => e.Id)
-            .UseIdentityColumn();
 
         builder.Property(e => e.EventType)
             .IsRequired()
@@ -38,22 +35,6 @@ public class EventLogConfiguration : IEntityTypeConfiguration<EventLog>
 
         builder.Property(e => e.OccurredAt)
             .HasDefaultValueSql("GETUTCDATE()");
-
-        builder.Property(e => e.CreatedAt)
-            .HasDefaultValueSql("GETUTCDATE()");
-
-        builder.Property(e => e.UpdatedAt)
-            .HasDefaultValueSql("GETUTCDATE()");
-
-        builder.Property(e => e.IsDeleted)
-            .HasDefaultValue(false);
-
-        builder.Property(e => e.UniqueId)
-            .HasDefaultValueSql("NEWID()");
-
-        builder.HasIndex(e => e.UniqueId)
-            .IsUnique()
-            .HasDatabaseName("UQ_EventLogs_UniqueId");
 
         builder.HasIndex(e => e.EventType)
             .HasFilter("IsDeleted = 0")
