@@ -61,6 +61,11 @@ public record OtpVerificationData
     public int RemainingAttempts { get; init; }
 }
 
+public record RequestResendOtpData
+{
+    public string Outcome { get; init; } = string.Empty;
+}
+
 public record MembershipQueryData
 {
     public required Guid UniqueIdentifier { get; init; }

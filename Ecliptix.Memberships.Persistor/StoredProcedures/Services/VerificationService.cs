@@ -147,4 +147,31 @@ public class VerificationService : IVerificationService
             cancellationToken
         );
     }
+
+    public async Task<StoredProcedureResult<RequestResendOtpData>> RequestResendOtpCodeAsync(
+        Guid flowUniqueId,
+        CancellationToken cancellationToken = default)
+    {
+        _logger.LogDebug("Requesting resend of OTP code for flow: {FlowId}", flowUniqueId);
+
+        SqlParameter[] parameters =
+        [
+            SqlParameterHelper.In("@FlowUniqueId", flowUniqueId),
+            SqlParameterHelper.Out("@Outcome", SqlDbType.NVarChar, Constants.OutcomeLength),
+            SqlParameterHelper.Out("@ErrorMessage", SqlDbType.NVarChar, Constants.ErrorMessageLength)
+        ];
+        
+        return await _executor.ExecuteWithOutcomeAsync(
+            "dbo.SP_RequestResendOtpCode",
+            parameters,
+            outputParams => new RequestResendOtpData{
+                Outcome = outputParams[1].Value?.ToString() ?? "unknown"
+            },
+            outcomeIndex: 1,
+            errorIndex: 2,
+            cancellationToken
+        );
+    }
+    
+    
 }
