@@ -4,6 +4,7 @@ using Ecliptix.Memberships.Persistor.Schema;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -12,9 +13,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Ecliptix.Memberships.Persistor.Migrations
 {
     [DbContext(typeof(EcliptixSchemaContext))]
-    partial class EcliptixSchemaContextModelSnapshot : ModelSnapshot
+    [Migration("20250925074341_RefactorEntities_AddBaseFieldsAndIndexes")]
+    partial class RefactorEntities_AddBaseFieldsAndIndexes
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
