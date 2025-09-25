@@ -66,6 +66,11 @@ public record RequestResendOtpData
     public string Outcome { get; init; } = string.Empty;
 }
 
+public record UpdateVerificationFlowStatusData
+{
+    public int RowsAffected { get; init; }
+}
+
 public record MembershipQueryData
 {
     public required Guid UniqueIdentifier { get; init; }

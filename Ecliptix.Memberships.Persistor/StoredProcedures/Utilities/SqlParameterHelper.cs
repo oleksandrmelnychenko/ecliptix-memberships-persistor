@@ -12,4 +12,7 @@ public static class SqlParameterHelper
         size > 0
             ? new(name, type, size) { Direction = ParameterDirection.Output }
             : new(name, type) { Direction = ParameterDirection.Output };
+    
+    public static SqlParameter Return(string name, SqlDbType type) =>
+        new(name, type) { Direction = ParameterDirection.ReturnValue };
 }

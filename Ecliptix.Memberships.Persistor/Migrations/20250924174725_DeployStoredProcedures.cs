@@ -25,6 +25,7 @@ namespace Ecliptix.Memberships.Persistor.Migrations
             migrationBuilder.Sql(File.ReadAllText("StoredProcedures/Scripts/Verification/SP_GenerateOtpCode.sql"));
             migrationBuilder.Sql(File.ReadAllText("StoredProcedures/Scripts/Verification/SP_VerifyOtpCode.sql"));
             migrationBuilder.Sql(File.ReadAllText("StoredProcedures/Scripts/Verification/SP_RequestResendOtpCode.sql"));
+            migrationBuilder.Sql(File.ReadAllText("StoredProcedures/Scripts/Verification/SP_UpdateVerificationFlowStatus.sql"));
             
             // 5. FINAL LOG
             migrationBuilder.Sql(@"
@@ -47,6 +48,8 @@ namespace Ecliptix.Memberships.Persistor.Migrations
             migrationBuilder.Sql("DROP PROCEDURE IF EXISTS dbo.SP_InitiateVerificationFlow");
             migrationBuilder.Sql("DROP PROCEDURE IF EXISTS dbo.SP_GenerateOtpCode");
             migrationBuilder.Sql("DROP PROCEDURE IF EXISTS dbo.SP_VerifyOtpCode");
+            migrationBuilder.Sql("DROP PROCEDURE IF EXISTS dbo.SP_RequestResendOtpCode");
+            migrationBuilder.Sql("DROP PROCEDURE IF EXISTS dbo.SP_UpdateVerificationFlowStatus");
         }
     }
 }

@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Ecliptix.Memberships.Persistor.StoredProcedures.Interfaces;
 using Ecliptix.Memberships.Persistor.StoredProcedures.Models;
 using System.Data;
+using Ecliptix.Memberships.Persistor.StoredProcedures.Models.Enums;
 using Ecliptix.Memberships.Persistor.StoredProcedures.Utilities;
 
 namespace Ecliptix.Memberships.Persistor.StoredProcedures.Services;
@@ -172,6 +173,32 @@ public class VerificationService : IVerificationService
             cancellationToken
         );
     }
-    
-    
+
+    public async Task<StoredProcedureResult<UpdateVerificationFlowStatusData>> UpdateVerificationFlowStatusAsync(
+        Guid flowUniqueId,
+        VerificationFlowStatus status,
+        CancellationToken cancellationToken = default)
+    {
+        _logger.LogDebug("Updating verification flow status for flow: {FlowId} to {Status}", flowUniqueId, status);
+
+        SqlParameter[] parameters = 
+        [
+            SqlParameterHelper.In("@FlowUniqueId", flowUniqueId),
+            SqlParameterHelper.In("@Status", status.ToString()),
+            SqlParameterHelper.Return("@rowsAffected", SqlDbType.Int),
+            SqlParameterHelper.Out("@Outcome", SqlDbType.NVarChar, Constants.OutcomeLength),
+            SqlParameterHelper.Out("@ErrorMessage", SqlDbType.NVarChar, Constants.ErrorMessageLength)
+        ];
+        
+        return await _executor.ExecuteWithOutcomeAsync(
+            "dbo.SP_UpdateVerificationFlowStatus",
+            parameters,
+            outputParams => new UpdateVerificationFlowStatusData{
+                RowsAffected = (int)outputParams[2].Value
+            },
+            outcomeIndex: 3,
+            errorIndex: 4,
+            cancellationToken
+        );
+    }
 }
