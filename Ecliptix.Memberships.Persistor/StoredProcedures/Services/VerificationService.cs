@@ -259,4 +259,29 @@ public class VerificationService : IVerificationService
             cancellationToken
         );
     }
+
+    public async Task<StoredProcedureResult<Guid>> UpdateOtpStatusAsync(
+        Guid otpUniqueId,
+        VerificationFlowStatus status,
+        CancellationToken cancellationToken = default)
+    {
+        _logger.LogDebug("Updating OTP statuses");
+        
+        SqlParameter[] parameters =
+        [
+            SqlParameterHelper.In("@OtpUniqueId", otpUniqueId),
+            SqlParameterHelper.In("@Status", status.ToString()),
+            SqlParameterHelper.Out("@Outcome", SqlDbType.NVarChar, Constants.OutcomeLength),
+            SqlParameterHelper.Out("@ErrorMessage", SqlDbType.NVarChar, Constants.ErrorMessageLength)
+        ];
+        
+        return await _executor.ExecuteWithOutcomeAsync(
+            "dbo.SP_UpdateOtpStatus",
+            parameters,
+            _ => otpUniqueId,
+            outcomeIndex: 2,
+            errorIndex: 3,
+            cancellationToken
+        );
+    }
 }
