@@ -17,7 +17,7 @@ CREATE OR ALTER PROCEDURE dbo.SP_UpdateMembershipSecureKey
 BEGIN
     SET NOCOUNT ON;
 
-    DECLARE @PhoneNumberId UNIQUEIDENTIFIER;
+    DECLARE @MobileNumberId UNIQUEIDENTIFIER;
 
     SET @Outcome = NULL;
     SET @ErrorMessage = NULL;
@@ -35,7 +35,7 @@ ROLLBACK TRANSACTION;
 RETURN;
 END
 
-SELECT @PhoneNumberId = PhoneNumberId
+SELECT @MobileNumberId = MobileNumberId
 FROM dbo.Memberships
 WHERE UniqueId = @MembershipUniqueId AND IsDeleted = 0;
 
@@ -55,7 +55,7 @@ WHERE UniqueId = @MembershipUniqueId;
 
 IF @@ROWCOUNT = 0
 BEGIN
-EXEC dbo.LogMembershipAttempt @PhoneNumberId, 'update_failed', 0;
+EXEC dbo.LogMembershipAttempt @MobileNumberId, 'update_failed', 0;
             SET @Outcome = 'update_failed';
             SET @ErrorMessage = 'Failed to update membership';
 ROLLBACK TRANSACTION;
@@ -66,7 +66,7 @@ SELECT @Status = Status, @CreationStatus = CreationStatus
 FROM dbo.Memberships
 WHERE UniqueId = @MembershipUniqueId;
 
-EXEC dbo.LogMembershipAttempt @PhoneNumberId, 'secure_key_updated', 1;
+EXEC dbo.LogMembershipAttempt @MobileNumberId, 'secure_key_updated', 1;
 
         SET @Outcome = 'success';
         SET @ErrorMessage = NULL;
@@ -81,7 +81,7 @@ IF @@TRANCOUNT > 0
         SET @ErrorMessage = ERROR_MESSAGE();
 
         IF @MembershipUniqueId IS NOT NULL
-            EXEC dbo.LogMembershipAttempt @PhoneNumberId, 'update_failed', 0;
+            EXEC dbo.LogMembershipAttempt @MobileNumberId, 'update_failed', 0;
 END CATCH
 END;
 GO

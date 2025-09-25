@@ -7,7 +7,7 @@ A comprehensive stored procedures management system for the Ecliptix database wi
 ```
 StoredProcedures/
 ├── Scripts/                  # SQL stored procedure scripts
-│   ├── Core/                 # Basic operations (phone numbers, devices)
+│   ├── Core/                 # Basic operations (Mobile numbers, devices)
 │   ├── Verification/         # OTP and verification logic
 │   ├── Membership/           # User membership operations
 │   ├── Authentication/       # Login and auth procedures
@@ -57,10 +57,10 @@ public class VerificationController : ControllerBase
 {
     private readonly IVerificationService _verificationService;
 
-    public async Task<IActionResult> StartVerification(string phoneNumber, string region)
+    public async Task<IActionResult> StartVerification(string MobileNumber, string region)
     {
         var result = await _verificationService.InitiateVerificationFlowAsync(
-            phoneNumber, region, deviceId);
+            MobileNumber, region, deviceId);
 
         if (result.IsSuccess)
             return Ok(result.Data);
@@ -73,11 +73,11 @@ public class VerificationController : ControllerBase
 ## 📋 Available Stored Procedures
 
 ### Core Procedures
-- **SP_EnsurePhoneNumber** - Get or create phone number record
+- **SP_EnsureMobileNumber** - Get or create Mobile number record
 - **SP_RegisterAppDevice** - Register application device
 
 ### Verification Procedures
-- **SP_InitiateVerificationFlow** - Start phone verification process
+- **SP_InitiateVerificationFlow** - Start Mobile verification process
 - **SP_GenerateOtpCode** - Generate OTP code for verification
 - **SP_VerifyOtpCode** - Verify submitted OTP code
 
@@ -87,7 +87,7 @@ public class VerificationController : ControllerBase
 ## 🔧 Service Layer
 
 ### IVerificationService
-- `EnsurePhoneNumberAsync()` - Phone number management
+- `EnsureMobileNumberAsync()` - Mobile number management
 - `RegisterAppDeviceAsync()` - Device registration
 - `InitiateVerificationFlowAsync()` - Start verification
 - `GenerateOtpCodeAsync()` - OTP generation
@@ -122,7 +122,7 @@ Common outcomes:
 
 ## 🔐 Security Features
 
-- **Rate Limiting**: 30 flows per hour per phone, 10 per device
+- **Rate Limiting**: 30 flows per hour per Mobile, 10 per device
 - **OTP Expiry**: Configurable expiration (default 5 minutes)
 - **Attempt Limiting**: Max 3 verification attempts per OTP
 - **Audit Logging**: All operations logged to EventLogs table

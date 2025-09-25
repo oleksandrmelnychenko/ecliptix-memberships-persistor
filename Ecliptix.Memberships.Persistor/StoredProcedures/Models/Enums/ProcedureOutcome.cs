@@ -8,13 +8,18 @@ public enum ProcedureOutcome
 
     AlreadyExists,
     Error,
+    EligibleForRecovery,
     FlowExpired,
     Invalid,
     InvalidCode,
+    MembershipNotFound,
     MaxAttemptsExceeded,
+    MembershipBlocked,
     MembershipAlreadyExists,
-    NoActiveOtp,
     NoData,
+    NoActiveOtp,
+    NoSecureKey,
+    PhoneNotFound,
     RateLimitExceeded,
     SqlError
 }

@@ -19,18 +19,18 @@ public class VerificationService : IVerificationService
         _logger = logger;
     }
 
-    public async Task<StoredProcedureResult<PhoneNumberData>> EnsureMobileNumberAsync(
-        string phoneNumber,
+    public async Task<StoredProcedureResult<MobileNumberData>> EnsureMobileNumberAsync(
+        string mobileNumber,
         string? region = null,
         CancellationToken cancellationToken = default)
     {
-        _logger.LogDebug("Ensuring phone number exists: {PhoneNumber}", phoneNumber);
+        _logger.LogDebug("Ensuring Mobile number exists: {MobileNumber}", mobileNumber);
 
         SqlParameter[] parameters =
         [
-            SqlParameterHelper.In("@PhoneNumber", phoneNumber),
+            SqlParameterHelper.In("@MobileNumber", mobileNumber),
             SqlParameterHelper.In("@Region", region),
-            SqlParameterHelper.Out("@PhoneNumberId", SqlDbType.BigInt),
+            SqlParameterHelper.Out("@MobileNumberId", SqlDbType.BigInt),
             SqlParameterHelper.Out("@UniqueId", SqlDbType.UniqueIdentifier),
             SqlParameterHelper.Out("@IsNewlyCreated", SqlDbType.Bit)
         ];
@@ -38,8 +38,8 @@ public class VerificationService : IVerificationService
         return await _executor.ExecuteWithOutputAsync(
             "dbo.SP_EnsureMobileNumber",
             parameters,
-            outputParams => new PhoneNumberData{
-                PhoneNumberId = (long)outputParams[2].Value,
+            outputParams => new MobileNumberData{
+                MobileNumberId = (long)outputParams[2].Value,
                 UniqueId = (Guid)outputParams[3].Value,
                 IsNewlyCreated = (bool)outputParams[4].Value
             },
@@ -47,18 +47,18 @@ public class VerificationService : IVerificationService
     }
 
     public async Task<StoredProcedureResult<VerificationFlowData>> InitiateVerificationFlowAsync(
-        string phoneNumber,
+        string mobileNumber,
         string region,
         Guid appDeviceId,
         string purpose = "unspecified",
         long? connectionId = null,
         CancellationToken cancellationToken = default)
     {
-        _logger.LogDebug("Initiating verification flow for phone: {PhoneNumber}", phoneNumber);
+        _logger.LogDebug("Initiating verification flow for Mobile: {MobileNumber}", mobileNumber);
 
         SqlParameter[] parameters =
         [
-            SqlParameterHelper.In("@PhoneNumber", phoneNumber),
+            SqlParameterHelper.In("@MobileNumber", mobileNumber),
             SqlParameterHelper.In("@Region", region),
             SqlParameterHelper.In("@AppDeviceId", appDeviceId),
             SqlParameterHelper.In("@Purpose", purpose),
@@ -195,6 +195,34 @@ public class VerificationService : IVerificationService
             parameters,
             outputParams => new UpdateVerificationFlowStatusData{
                 RowsAffected = (int)outputParams[2].Value
+            },
+            outcomeIndex: 3,
+            errorIndex: 4,
+            cancellationToken
+        );
+    }
+
+    public async Task<StoredProcedureResult<VerifyMobileForSecretKeyRecoveryData>> VerifyMobileForSecretKeyRecoveryAsync(
+        string mobileNumber,
+        string? region,
+        CancellationToken cancellationToken = default)
+    {
+        _logger.LogDebug("Verifying Mobile for secret key recovery: {MobileNumber}", mobileNumber);
+
+        SqlParameter[] parameters =
+        [
+            SqlParameterHelper.In("@MobileNumber", mobileNumber),
+            SqlParameterHelper.In("@Region", region),
+            SqlParameterHelper.Out("@MobileNumberUniqueId", SqlDbType.UniqueIdentifier),
+            SqlParameterHelper.Out("@Outcome", SqlDbType.NVarChar, Constants.OutcomeLength),
+            SqlParameterHelper.Out("@ErrorMessage", SqlDbType.NVarChar, Constants.ErrorMessageLength)
+        ];
+        
+        return await _executor.ExecuteWithOutcomeAsync(
+            "dbo.SP_VerifyMobileForSecretKeyRecovery",
+            parameters,
+            outputParams => new VerifyMobileForSecretKeyRecoveryData{
+                MobileNumberUniqueId = (Guid)outputParams[2].Value
             },
             outcomeIndex: 3,
             errorIndex: 4,

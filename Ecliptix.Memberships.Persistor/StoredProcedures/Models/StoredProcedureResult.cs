@@ -27,9 +27,9 @@ public class StoredProcedureResult<T>
         };
 }
 
-public record PhoneNumberData
+public record MobileNumberData
 {
-    public long PhoneNumberId { get; init; }
+    public long MobileNumberId { get; init; }
     public Guid UniqueId { get; init; }
     public bool IsNewlyCreated { get; init; }
 }
@@ -69,6 +69,11 @@ public record RequestResendOtpData
 public record UpdateVerificationFlowStatusData
 {
     public int RowsAffected { get; init; }
+}
+
+public record VerifyMobileForSecretKeyRecoveryData
+{
+    public Guid MobileNumberUniqueId { get; init; }
 }
 
 public record MembershipQueryData
