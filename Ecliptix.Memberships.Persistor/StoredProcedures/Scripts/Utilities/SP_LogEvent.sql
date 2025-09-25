@@ -14,35 +14,10 @@ CREATE OR ALTER PROCEDURE dbo.SP_LogEvent
     @EntityType NVARCHAR(100) = NULL,
     @EntityId BIGINT = NULL,
     @UserId UNIQUEIDENTIFIER = NULL,
-    @IpAddress NVARCHAR(45) = NULL,
-    @UserAgent NVARCHAR(500) = NULL,
     @SessionId NVARCHAR(100) = NULL
 AS
 BEGIN
     SET NOCOUNT ON;
-
-    -- Ensure EventLogs table exists before inserting
-    IF OBJECT_ID(N'dbo.EventLogs', N'U') IS NULL
-    BEGIN
-        CREATE TABLE dbo.EventLogs (
-            Id BIGINT IDENTITY(1,1) PRIMARY KEY,
-            UniqueId UNIQUEIDENTIFIER NOT NULL,
-            EventType NVARCHAR(50) NOT NULL,
-            Severity NVARCHAR(20) NOT NULL,
-            Message NVARCHAR(200) NOT NULL,
-            Details NVARCHAR(4000) NULL,
-            EntityType NVARCHAR(100) NULL,
-            EntityId BIGINT NULL,
-            UserId UNIQUEIDENTIFIER NULL,
-            IpAddress NVARCHAR(45) NULL,
-            UserAgent NVARCHAR(500) NULL,
-            SessionId NVARCHAR(100) NULL,
-            OccurredAt DATETIME2 NOT NULL,
-            CreatedAt DATETIME2 NOT NULL,
-            UpdatedAt DATETIME2 NOT NULL,
-            IsDeleted BIT NOT NULL DEFAULT 0
-        );
-    END
 
     BEGIN TRY
         -- Validate severity
@@ -54,12 +29,12 @@ BEGIN
         -- Insert event log
         INSERT INTO dbo.EventLogs (
             EventType, Severity, Message, Details, EntityType, EntityId,
-            UserId, IpAddress, UserAgent, SessionId, OccurredAt,
+            UserId, SessionId, OccurredAt,
             CreatedAt, UpdatedAt, IsDeleted, UniqueId
         )
         VALUES (
             @EventType, @Severity, @Message, @Details, @EntityType, @EntityId,
-            @UserId, @IpAddress, @UserAgent, @SessionId, GETUTCDATE(),
+            @UserId, @SessionId, GETUTCDATE(),
             GETUTCDATE(), GETUTCDATE(), 0, NEWID()
         );
 

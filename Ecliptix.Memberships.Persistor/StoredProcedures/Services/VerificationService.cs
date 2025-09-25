@@ -3,6 +3,8 @@ using Microsoft.Extensions.Logging;
 using Ecliptix.Memberships.Persistor.StoredProcedures.Interfaces;
 using Ecliptix.Memberships.Persistor.StoredProcedures.Models;
 using System.Data;
+using Ecliptix.Memberships.Persistor.StoredProcedures.Models.Enums;
+using Ecliptix.Memberships.Persistor.StoredProcedures.Utilities;
 
 namespace Ecliptix.Memberships.Persistor.StoredProcedures.Services;
 
@@ -17,118 +19,66 @@ public class VerificationService : IVerificationService
         _logger = logger;
     }
 
-    public async Task<StoredProcedureResult<PhoneNumberData>> EnsurePhoneNumberAsync(
-        string phoneNumber,
+    public async Task<StoredProcedureResult<MobileNumberData>> EnsureMobileNumberAsync(
+        string mobileNumber,
         string? region = null,
         CancellationToken cancellationToken = default)
     {
-        _logger.LogDebug("Ensuring phone number exists: {PhoneNumber}", phoneNumber);
+        _logger.LogDebug("Ensuring Mobile number exists: {MobileNumber}", mobileNumber);
 
-        SqlParameter[] parameters = new[]
-        {
-            new SqlParameter("@PhoneNumber", phoneNumber),
-            new SqlParameter("@Region", region ?? (object)DBNull.Value),
-            new SqlParameter("@PhoneNumberId", SqlDbType.BigInt) { Direction = ParameterDirection.Output },
-            new SqlParameter("@UniqueId", SqlDbType.UniqueIdentifier) { Direction = ParameterDirection.Output },
-            new SqlParameter("@IsNewlyCreated", SqlDbType.Bit) { Direction = ParameterDirection.Output }
-        };
+        SqlParameter[] parameters =
+        [
+            SqlParameterHelper.In("@MobileNumber", mobileNumber),
+            SqlParameterHelper.In("@Region", region),
+            SqlParameterHelper.Out("@MobileNumberId", SqlDbType.BigInt),
+            SqlParameterHelper.Out("@UniqueId", SqlDbType.UniqueIdentifier),
+            SqlParameterHelper.Out("@IsNewlyCreated", SqlDbType.Bit)
+        ];
 
         return await _executor.ExecuteWithOutputAsync(
-            "dbo.SP_EnsurePhoneNumber",
+            "dbo.SP_EnsureMobileNumber",
             parameters,
-            outputParams => new PhoneNumberData
-            {
-                PhoneNumberId = (long)outputParams[2].Value,
+            outputParams => new MobileNumberData{
+                MobileNumberId = (long)outputParams[2].Value,
                 UniqueId = (Guid)outputParams[3].Value,
                 IsNewlyCreated = (bool)outputParams[4].Value
             },
             cancellationToken);
     }
 
-    public async Task<StoredProcedureResult<DeviceRegistrationData>> RegisterAppDeviceAsync(
-        Guid appInstanceId,
-        Guid deviceId,
-        int deviceType = 1,
-        CancellationToken cancellationToken = default)
-    {
-        _logger.LogDebug("Registering app device: {DeviceId}", deviceId);
-
-        SqlParameter[] parameters = new[]
-        {
-            new SqlParameter("@AppInstanceId", appInstanceId),
-            new SqlParameter("@DeviceId", deviceId),
-            new SqlParameter("@DeviceType", deviceType),
-            new SqlParameter("@DeviceUniqueId", SqlDbType.UniqueIdentifier) { Direction = ParameterDirection.Output },
-            new SqlParameter("@DeviceRecordId", SqlDbType.BigInt) { Direction = ParameterDirection.Output },
-            new SqlParameter("@IsNewlyCreated", SqlDbType.Bit) { Direction = ParameterDirection.Output }
-        };
-
-        return await _executor.ExecuteWithOutputAsync(
-            "dbo.SP_RegisterAppDevice",
-            parameters,
-            outputParams => new DeviceRegistrationData
-            {
-                DeviceUniqueId = (Guid)outputParams[3].Value,
-                DeviceRecordId = (long)outputParams[4].Value,
-                IsNewlyCreated = (bool)outputParams[5].Value
-            },
-            cancellationToken);
-    }
-
     public async Task<StoredProcedureResult<VerificationFlowData>> InitiateVerificationFlowAsync(
-        string phoneNumber,
+        string mobileNumber,
         string region,
         Guid appDeviceId,
         string purpose = "unspecified",
         long? connectionId = null,
         CancellationToken cancellationToken = default)
     {
-        _logger.LogDebug("Initiating verification flow for phone: {PhoneNumber}", phoneNumber);
+        _logger.LogDebug("Initiating verification flow for Mobile: {MobileNumber}", mobileNumber);
 
-        SqlParameter[] parameters = new[]
-        {
-            new SqlParameter("@PhoneNumber", phoneNumber),
-            new SqlParameter("@Region", region),
-            new SqlParameter("@AppDeviceId", appDeviceId),
-            new SqlParameter("@Purpose", purpose),
-            new SqlParameter("@ConnectionId", connectionId ?? (object)DBNull.Value),
-            new SqlParameter("@FlowUniqueId", SqlDbType.UniqueIdentifier) { Direction = ParameterDirection.Output },
-            new SqlParameter("@Outcome", SqlDbType.NVarChar, 50) { Direction = ParameterDirection.Output },
-            new SqlParameter("@ErrorMessage", SqlDbType.NVarChar, 500) { Direction = ParameterDirection.Output }
-        };
+        SqlParameter[] parameters =
+        [
+            SqlParameterHelper.In("@MobileNumber", mobileNumber),
+            SqlParameterHelper.In("@Region", region),
+            SqlParameterHelper.In("@AppDeviceId", appDeviceId),
+            SqlParameterHelper.In("@Purpose", purpose),
+            SqlParameterHelper.In("@ConnectionId", connectionId ?? (object)DBNull.Value),
+            SqlParameterHelper.Out("@FlowUniqueId", SqlDbType.UniqueIdentifier),
+            SqlParameterHelper.Out("@Outcome", SqlDbType.NVarChar, 50),
+            SqlParameterHelper.Out("@ErrorMessage", SqlDbType.NVarChar, 500)
+        ];
 
-        StoredProcedureResult<VerificationFlowData> result = await _executor.ExecuteWithOutputAsync(
+        return await _executor.ExecuteWithOutcomeAsync(
             "dbo.SP_InitiateVerificationFlow",
             parameters,
-            outputParams =>
-            {
-                string outcome = outputParams[6].Value?.ToString() ?? "error";
-                string? errorMessage = outputParams[7].Value?.ToString();
-                Guid flowId = outputParams[5].Value != DBNull.Value ? (Guid)outputParams[5].Value : Guid.Empty;
-
-                if (outcome == "success")
-                {
-                    return new VerificationFlowData
-                    {
-                        FlowUniqueId = flowId,
-                        ExpiresAt = DateTime.UtcNow.AddMinutes(15)
-                    };
-                }
-
-                throw new InvalidOperationException($"Failed to initiate verification flow: {outcome} - {errorMessage}");
+            outputParams => new VerificationFlowData{
+                FlowUniqueId = (Guid)outputParams[5].Value,
+                ExpiresAt = DateTime.UtcNow.AddMinutes(15)
             },
-            cancellationToken);
-
-        if (!result.IsSuccess && result.ErrorMessage?.Contains("Failed to initiate verification flow") == true)
-        {
-            string[] parts = result.ErrorMessage.Split(" - ", 2);
-            if (parts.Length == 2)
-            {
-                return StoredProcedureResult<VerificationFlowData>.Failure(parts[0].Split(": ")[1], parts[1]);
-            }
-        }
-
-        return result;
+            outcomeIndex: 6,
+            errorIndex: 7,
+            cancellationToken
+        );
     }
 
     public async Task<StoredProcedureResult<OtpGenerationData>> GenerateOtpCodeAsync(
@@ -139,92 +89,223 @@ public class VerificationService : IVerificationService
     {
         _logger.LogDebug("Generating OTP code for flow: {FlowId}", flowUniqueId);
 
-        SqlParameter[] parameters = new[]
-        {
-            new SqlParameter("@FlowUniqueId", flowUniqueId),
-            new SqlParameter("@OtpLength", otpLength),
-            new SqlParameter("@ExpiryMinutes", expiryMinutes),
-            new SqlParameter("@OtpCode", SqlDbType.NVarChar, 10) { Direction = ParameterDirection.Output },
-            new SqlParameter("@OtpUniqueId", SqlDbType.UniqueIdentifier) { Direction = ParameterDirection.Output },
-            new SqlParameter("@Outcome", SqlDbType.NVarChar, 50) { Direction = ParameterDirection.Output },
-            new SqlParameter("@ErrorMessage", SqlDbType.NVarChar, 500) { Direction = ParameterDirection.Output }
-        };
+        SqlParameter[] parameters =
+        [
+            SqlParameterHelper.In("@FlowUniqueId", flowUniqueId),
+            SqlParameterHelper.In("@OtpLength", otpLength),
+            SqlParameterHelper.In("@ExpiryMinutes", expiryMinutes),
+            SqlParameterHelper.Out("@OtpCode", SqlDbType.UniqueIdentifier),
+            SqlParameterHelper.Out("@OtpUniqueId", SqlDbType.UniqueIdentifier),
+            SqlParameterHelper.Out("@Outcome", SqlDbType.NVarChar, 50),
+            SqlParameterHelper.Out("@ErrorMessage", SqlDbType.NVarChar, 500)
+        ];
 
-        StoredProcedureResult<OtpGenerationData> result = await _executor.ExecuteWithOutputAsync(
+        return await _executor.ExecuteWithOutcomeAsync(
             "dbo.SP_GenerateOtpCode",
             parameters,
-            outputParams =>
-            {
-                string outcome = outputParams[5].Value?.ToString() ?? "error";
-                string? errorMessage = outputParams[6].Value?.ToString();
-
-                if (outcome == "success")
-                {
-                    return new OtpGenerationData
-                    {
-                        OtpCode = outputParams[3].Value?.ToString() ?? "",
-                        OtpUniqueId = (Guid)outputParams[4].Value,
-                        ExpiresAt = DateTime.UtcNow.AddMinutes(expiryMinutes)
-                    };
-                }
-
-                throw new InvalidOperationException($"Failed to generate OTP: {outcome} - {errorMessage}");
+            outputParams => new OtpGenerationData{
+                OtpCode = outputParams[3].Value?.ToString() ?? "",
+                OtpUniqueId = (Guid)outputParams[4].Value,
+                ExpiresAt = DateTime.UtcNow.AddMinutes(expiryMinutes)
             },
-            cancellationToken);
-
-        if (!result.IsSuccess && result.ErrorMessage?.Contains("Failed to generate OTP") == true)
-        {
-            string[] parts = result.ErrorMessage.Split(" - ", 2);
-            if (parts.Length == 2)
-            {
-                return StoredProcedureResult<OtpGenerationData>.Failure(parts[0].Split(": ")[1], parts[1]);
-            }
-        }
-
-        return result;
+            outcomeIndex: 5,
+            errorIndex: 6,
+            cancellationToken
+        );
     }
-
+    
     public async Task<StoredProcedureResult<OtpVerificationData>> VerifyOtpCodeAsync(
         Guid flowUniqueId,
         string otpCode,
-        string? ipAddress = null,
-        string? userAgent = null,
         CancellationToken cancellationToken = default)
     {
         _logger.LogDebug("Verifying OTP code for flow: {FlowId}", flowUniqueId);
 
-        SqlParameter[] parameters = new[]
-        {
-            new SqlParameter("@FlowUniqueId", flowUniqueId),
-            new SqlParameter("@OtpCode", otpCode),
-            new SqlParameter("@IpAddress", ipAddress ?? (object)DBNull.Value),
-            new SqlParameter("@UserAgent", userAgent ?? (object)DBNull.Value),
-            new SqlParameter("@IsValid", SqlDbType.Bit) { Direction = ParameterDirection.Output },
-            new SqlParameter("@Outcome", SqlDbType.NVarChar, 50) { Direction = ParameterDirection.Output },
-            new SqlParameter("@ErrorMessage", SqlDbType.NVarChar, 500) { Direction = ParameterDirection.Output },
-            new SqlParameter("@VerifiedAt", SqlDbType.DateTime2) { Direction = ParameterDirection.Output }
-        };
+        SqlParameter[] parameters =
+        [
+            SqlParameterHelper.In("@FlowUniqueId", flowUniqueId),
+            SqlParameterHelper.In("@OtpCode", otpCode),
+            SqlParameterHelper.Out("@IsValid", SqlDbType.Bit),
+            SqlParameterHelper.Out("@Outcome", SqlDbType.NVarChar, 50),
+            SqlParameterHelper.Out("@ErrorMessage", SqlDbType.NVarChar, 500),
+            SqlParameterHelper.Out("@VerifiedAt", SqlDbType.DateTime2)
+        ];
 
-        StoredProcedureResult<OtpVerificationData> result = await _executor.ExecuteWithOutputAsync(
+        return await _executor.ExecuteWithOutcomeAsync(
             "dbo.SP_VerifyOtpCode",
             parameters,
             outputParams =>
             {
-                bool isValid = (bool)outputParams[4].Value;
-                string outcome = outputParams[5].Value?.ToString() ?? "invalid";
-                string? errorMessage = outputParams[6].Value?.ToString();
-                DateTime? verifiedAt = outputParams[7].Value != DBNull.Value ? (DateTime?)outputParams[7].Value : null;
-
-                return new OtpVerificationData
-                {
-                    IsValid = isValid,
-                    VerifiedAt = verifiedAt,
-                    RemainingAttempts = outcome.Contains("attempts remaining") ?
-                        int.Parse(outcome.Split(" ")[0]) : 0
+                string outcome = outputParams[3].Value?.ToString() ?? "invalid";
+                return new OtpVerificationData{
+                    IsValid = (bool)outputParams[2].Value,
+                    VerifiedAt = outputParams[5].Value != DBNull.Value ? (DateTime?)outputParams[7].Value : null,
+                    RemainingAttempts = outcome.Contains("attempts remaining") ? int.Parse(outcome.Split(" ")[0]) : 0
                 };
             },
-            cancellationToken);
+            outcomeIndex: 3,
+            errorIndex: 4,
+            cancellationToken
+        );
+    }
 
-        return result;
+    public async Task<StoredProcedureResult<RequestResendOtpData>> RequestResendOtpCodeAsync(
+        Guid flowUniqueId,
+        CancellationToken cancellationToken = default)
+    {
+        _logger.LogDebug("Requesting resend of OTP code for flow: {FlowId}", flowUniqueId);
+
+        SqlParameter[] parameters =
+        [
+            SqlParameterHelper.In("@FlowUniqueId", flowUniqueId),
+            SqlParameterHelper.Out("@Outcome", SqlDbType.NVarChar, Constants.OutcomeLength),
+            SqlParameterHelper.Out("@ErrorMessage", SqlDbType.NVarChar, Constants.ErrorMessageLength)
+        ];
+        
+        return await _executor.ExecuteWithOutcomeAsync(
+            "dbo.SP_RequestResendOtpCode",
+            parameters,
+            outputParams => new RequestResendOtpData{
+                Outcome = outputParams[1].Value?.ToString() ?? "unknown"
+            },
+            outcomeIndex: 1,
+            errorIndex: 2,
+            cancellationToken
+        );
+    }
+
+    public async Task<StoredProcedureResult<UpdateVerificationFlowStatusData>> UpdateVerificationFlowStatusAsync(
+        Guid flowUniqueId,
+        VerificationFlowStatus status,
+        CancellationToken cancellationToken = default)
+    {
+        _logger.LogDebug("Updating verification flow status for flow: {FlowId} to {Status}", flowUniqueId, status);
+
+        SqlParameter[] parameters = 
+        [
+            SqlParameterHelper.In("@FlowUniqueId", flowUniqueId),
+            SqlParameterHelper.In("@Status", status.ToString()),
+            SqlParameterHelper.Return("@rowsAffected", SqlDbType.Int),
+            SqlParameterHelper.Out("@Outcome", SqlDbType.NVarChar, Constants.OutcomeLength),
+            SqlParameterHelper.Out("@ErrorMessage", SqlDbType.NVarChar, Constants.ErrorMessageLength)
+        ];
+        
+        return await _executor.ExecuteWithOutcomeAsync(
+            "dbo.SP_UpdateVerificationFlowStatus",
+            parameters,
+            outputParams => new UpdateVerificationFlowStatusData{
+                RowsAffected = (int)outputParams[2].Value
+            },
+            outcomeIndex: 3,
+            errorIndex: 4,
+            cancellationToken
+        );
+    }
+
+    public async Task<StoredProcedureResult<VerifyMobileForSecretKeyRecoveryData>> VerifyMobileForSecretKeyRecoveryAsync(
+        string mobileNumber,
+        string? region,
+        CancellationToken cancellationToken = default)
+    {
+        _logger.LogDebug("Verifying Mobile for secret key recovery: {MobileNumber}", mobileNumber);
+
+        SqlParameter[] parameters =
+        [
+            SqlParameterHelper.In("@MobileNumber", mobileNumber),
+            SqlParameterHelper.In("@Region", region),
+            SqlParameterHelper.Out("@MobileNumberUniqueId", SqlDbType.UniqueIdentifier),
+            SqlParameterHelper.Out("@Outcome", SqlDbType.NVarChar, Constants.OutcomeLength),
+            SqlParameterHelper.Out("@ErrorMessage", SqlDbType.NVarChar, Constants.ErrorMessageLength)
+        ];
+        
+        return await _executor.ExecuteWithOutcomeAsync(
+            "dbo.SP_VerifyMobileForSecretKeyRecovery",
+            parameters,
+            outputParams => new VerifyMobileForSecretKeyRecoveryData{
+                MobileNumberUniqueId = (Guid)outputParams[2].Value
+            },
+            outcomeIndex: 3,
+            errorIndex: 4,
+            cancellationToken
+        );
+    }
+
+    public async Task<StoredProcedureResult<GetMobileNumberData>> GetMobileNumberAsync(
+        Guid phoneNumberIdentifier,
+        CancellationToken cancellationToken = default)
+    {
+        _logger.LogDebug("Getting Mobile number for identifier: {Identifier}", phoneNumberIdentifier);
+        
+        SqlParameter[] parameters =
+        [
+            SqlParameterHelper.In("@PhoneNumberIdentifier", phoneNumberIdentifier),
+            SqlParameterHelper.Out("@MobileNumber", SqlDbType.NVarChar, 18),
+            SqlParameterHelper.Out("@Region", SqlDbType.NVarChar, 2),
+            SqlParameterHelper.Out("@MobileNumberUniqueId", SqlDbType.UniqueIdentifier),
+            SqlParameterHelper.Out("@Outcome", SqlDbType.NVarChar, Constants.OutcomeLength),
+            SqlParameterHelper.Out("@ErrorMessage", SqlDbType.NVarChar, Constants.ErrorMessageLength)
+        ];
+        
+        return await _executor.ExecuteWithOutcomeAsync(
+            "dbo.SP_GetMobileNumber",
+            parameters,
+            outputParams => new GetMobileNumberData{
+                MobileNUmber = outputParams[1].Value?.ToString() ?? "",
+                Region = outputParams[2].Value?.ToString(),
+                MobileNumberUniqueId = (Guid)outputParams[3].Value
+            },
+            outcomeIndex: 4,
+            errorIndex: 5,
+            cancellationToken
+        );
+    }
+
+    public async Task<StoredProcedureResult<Guid>> UpdateOtpStatusAsync(
+        Guid otpUniqueId,
+        VerificationFlowStatus status,
+        CancellationToken cancellationToken = default)
+    {
+        _logger.LogDebug("Updating OTP statuses");
+        
+        SqlParameter[] parameters =
+        [
+            SqlParameterHelper.In("@OtpUniqueId", otpUniqueId),
+            SqlParameterHelper.In("@Status", status.ToString()),
+            SqlParameterHelper.Out("@Outcome", SqlDbType.NVarChar, Constants.OutcomeLength),
+            SqlParameterHelper.Out("@ErrorMessage", SqlDbType.NVarChar, Constants.ErrorMessageLength)
+        ];
+        
+        return await _executor.ExecuteWithOutcomeAsync(
+            "dbo.SP_UpdateOtpStatus",
+            parameters,
+            _ => otpUniqueId,
+            outcomeIndex: 2,
+            errorIndex: 3,
+            cancellationToken
+        );
+    }
+
+    public async Task<StoredProcedureResult<ExpireAssociatedOtpData>> ExpireAssociatedOtpAsync(
+        Guid flowUniqueId,
+        CancellationToken cancellationToken = default)
+    {
+        _logger.LogDebug("Expiring associated OTP for flow: {FlowId}", flowUniqueId);
+        SqlParameter[] parameters =
+        [
+            SqlParameterHelper.In("@FlowUniqueId", flowUniqueId),
+            SqlParameterHelper.Out("@Outcome", SqlDbType.NVarChar, Constants.OutcomeLength),
+            SqlParameterHelper.Out("@ErrorMessage", SqlDbType.NVarChar, Constants.ErrorMessageLength)
+        ];
+        
+        return await _executor.ExecuteWithOutcomeAsync(
+            "dbo.SP_ExpireAssociatedOtp",
+            parameters,
+            _ => new ExpireAssociatedOtpData{
+                FlowUniqueId = flowUniqueId
+            },
+            outcomeIndex: 1,
+            errorIndex: 2,
+            cancellationToken
+        );
     }
 }

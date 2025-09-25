@@ -70,7 +70,7 @@ namespace Ecliptix.Memberships.Persistor.Migrations
 
                     b.HasIndex("CreatedAt")
                         .IsDescending()
-                        .HasDatabaseName("IX_Devices_CreatedAt")
+                        .HasDatabaseName("IX_Device_CreatedAt")
                         .HasFilter("IsDeleted = 0");
 
                     b.HasIndex("DeviceId")
@@ -83,7 +83,12 @@ namespace Ecliptix.Memberships.Persistor.Migrations
 
                     b.HasIndex("UniqueId")
                         .IsUnique()
-                        .HasDatabaseName("UQ_Devices_UniqueId");
+                        .HasDatabaseName("UQ_Device_UniqueId");
+
+                    b.HasIndex("UpdatedAt")
+                        .IsDescending()
+                        .HasDatabaseName("IX_Device_UpdatedAt")
+                        .HasFilter("IsDeleted = 0");
 
                     b.ToTable("Devices", (string)null);
                 });
@@ -117,10 +122,6 @@ namespace Ecliptix.Memberships.Persistor.Migrations
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("IpAddress")
-                        .HasMaxLength(45)
-                        .HasColumnType("nvarchar(45)");
 
                     b.Property<bool>("IsDeleted")
                         .ValueGeneratedOnAdd()
@@ -156,14 +157,15 @@ namespace Ecliptix.Memberships.Persistor.Migrations
                         .HasColumnType("datetime2")
                         .HasDefaultValueSql("GETUTCDATE()");
 
-                    b.Property<string>("UserAgent")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
                     b.Property<Guid?>("UserId")
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CreatedAt")
+                        .IsDescending()
+                        .HasDatabaseName("IX_EventLog_CreatedAt")
+                        .HasFilter("IsDeleted = 0");
 
                     b.HasIndex("EventType")
                         .HasDatabaseName("IX_EventLogs_EventType")
@@ -184,7 +186,12 @@ namespace Ecliptix.Memberships.Persistor.Migrations
 
                     b.HasIndex("UniqueId")
                         .IsUnique()
-                        .HasDatabaseName("UQ_EventLogs_UniqueId");
+                        .HasDatabaseName("UQ_EventLog_UniqueId");
+
+                    b.HasIndex("UpdatedAt")
+                        .IsDescending()
+                        .HasDatabaseName("IX_EventLog_UpdatedAt")
+                        .HasFilter("IsDeleted = 0");
 
                     b.HasIndex("UserId")
                         .HasDatabaseName("IX_EventLogs_UserId")
@@ -226,10 +233,6 @@ namespace Ecliptix.Memberships.Persistor.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<string>("IpAddress")
-                        .HasMaxLength(45)
-                        .HasColumnType("nvarchar(45)");
-
                     b.Property<bool>("IsDeleted")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bit")
@@ -248,10 +251,6 @@ namespace Ecliptix.Memberships.Persistor.Migrations
                         .HasColumnType("datetime2")
                         .HasDefaultValueSql("GETUTCDATE()");
 
-                    b.Property<string>("UserAgent")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
                     b.HasKey("Id");
 
                     b.HasIndex("AttemptedAt")
@@ -259,16 +258,22 @@ namespace Ecliptix.Memberships.Persistor.Migrations
                         .HasDatabaseName("IX_FailedOtpAttempts_AttemptedAt")
                         .HasFilter("IsDeleted = 0");
 
-                    b.HasIndex("IpAddress")
-                        .HasDatabaseName("IX_FailedOtpAttempts_IpAddress")
-                        .HasFilter("IsDeleted = 0 AND IpAddress IS NOT NULL");
+                    b.HasIndex("CreatedAt")
+                        .IsDescending()
+                        .HasDatabaseName("IX_FailedOtpAttempt_CreatedAt")
+                        .HasFilter("IsDeleted = 0");
 
                     b.HasIndex("OtpRecordId")
                         .HasDatabaseName("IX_FailedOtpAttempts_OtpRecordId");
 
                     b.HasIndex("UniqueId")
                         .IsUnique()
-                        .HasDatabaseName("UQ_FailedOtpAttempts_UniqueId");
+                        .HasDatabaseName("UQ_FailedOtpAttempt_UniqueId");
+
+                    b.HasIndex("UpdatedAt")
+                        .IsDescending()
+                        .HasDatabaseName("IX_FailedOtpAttempt_UpdatedAt")
+                        .HasFilter("IsDeleted = 0");
 
                     b.ToTable("FailedOtpAttempts", (string)null);
                 });
@@ -296,10 +301,6 @@ namespace Ecliptix.Memberships.Persistor.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
-                    b.Property<string>("IpAddress")
-                        .HasMaxLength(45)
-                        .HasColumnType("nvarchar(45)");
-
                     b.Property<bool>("IsDeleted")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bit")
@@ -313,13 +314,13 @@ namespace Ecliptix.Memberships.Persistor.Migrations
                     b.Property<Guid>("MembershipId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("MobileNumber")
+                        .HasMaxLength(18)
+                        .HasColumnType("nvarchar(18)");
+
                     b.Property<string>("Outcome")
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
-
-                    b.Property<string>("PhoneNumber")
-                        .HasMaxLength(18)
-                        .HasColumnType("nvarchar(18)");
 
                     b.Property<string>("SessionId")
                         .HasMaxLength(100)
@@ -348,10 +349,6 @@ namespace Ecliptix.Memberships.Persistor.Migrations
                         .HasColumnType("datetime2")
                         .HasDefaultValueSql("GETUTCDATE()");
 
-                    b.Property<string>("UserAgent")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
                     b.HasKey("Id");
 
                     b.HasIndex("AttemptedAt")
@@ -359,9 +356,10 @@ namespace Ecliptix.Memberships.Persistor.Migrations
                         .HasDatabaseName("IX_LoginAttempts_AttemptedAt")
                         .HasFilter("IsDeleted = 0");
 
-                    b.HasIndex("IpAddress")
-                        .HasDatabaseName("IX_LoginAttempts_IpAddress")
-                        .HasFilter("IsDeleted = 0 AND IpAddress IS NOT NULL");
+                    b.HasIndex("CreatedAt")
+                        .IsDescending()
+                        .HasDatabaseName("IX_LoginAttempt_CreatedAt")
+                        .HasFilter("IsDeleted = 0");
 
                     b.HasIndex("IsSuccess")
                         .HasDatabaseName("IX_LoginAttempts_IsSuccess")
@@ -370,13 +368,13 @@ namespace Ecliptix.Memberships.Persistor.Migrations
                     b.HasIndex("MembershipId")
                         .HasDatabaseName("IX_LoginAttempts_MembershipId");
 
+                    b.HasIndex("MobileNumber")
+                        .HasDatabaseName("IX_LoginAttempts_MobileNumber")
+                        .HasFilter("IsDeleted = 0 AND MobileNumber IS NOT NULL");
+
                     b.HasIndex("Outcome")
                         .HasDatabaseName("IX_LoginAttempts_Outcome")
                         .HasFilter("IsDeleted = 0 AND Outcome IS NOT NULL");
-
-                    b.HasIndex("PhoneNumber")
-                        .HasDatabaseName("IX_LoginAttempts_PhoneNumber")
-                        .HasFilter("IsDeleted = 0 AND PhoneNumber IS NOT NULL");
 
                     b.HasIndex("SessionId")
                         .HasDatabaseName("IX_LoginAttempts_SessionId")
@@ -392,7 +390,12 @@ namespace Ecliptix.Memberships.Persistor.Migrations
 
                     b.HasIndex("UniqueId")
                         .IsUnique()
-                        .HasDatabaseName("UQ_LoginAttempts_UniqueId");
+                        .HasDatabaseName("UQ_LoginAttempt_UniqueId");
+
+                    b.HasIndex("UpdatedAt")
+                        .IsDescending()
+                        .HasDatabaseName("IX_LoginAttempt_UpdatedAt")
+                        .HasFilter("IsDeleted = 0");
 
                     b.ToTable("LoginAttempts", (string)null);
                 });
@@ -423,7 +426,7 @@ namespace Ecliptix.Memberships.Persistor.Migrations
                         .HasColumnType("bit")
                         .HasDefaultValue(false);
 
-                    b.Property<Guid>("PhoneNumberId")
+                    b.Property<Guid>("MobileNumberId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<byte[]>("SecureKey")
@@ -454,8 +457,13 @@ namespace Ecliptix.Memberships.Persistor.Migrations
                     b.HasIndex("AppDeviceId")
                         .HasDatabaseName("IX_Memberships_AppDeviceId");
 
-                    b.HasIndex("PhoneNumberId")
-                        .HasDatabaseName("IX_Memberships_PhoneNumberId");
+                    b.HasIndex("CreatedAt")
+                        .IsDescending()
+                        .HasDatabaseName("IX_Membership_CreatedAt")
+                        .HasFilter("IsDeleted = 0");
+
+                    b.HasIndex("MobileNumberId")
+                        .HasDatabaseName("IX_Memberships_MobileNumberId");
 
                     b.HasIndex("Status")
                         .HasDatabaseName("IX_Memberships_Status")
@@ -465,9 +473,14 @@ namespace Ecliptix.Memberships.Persistor.Migrations
                         .IsUnique()
                         .HasDatabaseName("UQ_Memberships_UniqueId");
 
+                    b.HasIndex("UpdatedAt")
+                        .IsDescending()
+                        .HasDatabaseName("IX_Membership_UpdatedAt")
+                        .HasFilter("IsDeleted = 0");
+
                     b.HasIndex("VerificationFlowId");
 
-                    b.HasIndex("PhoneNumberId", "AppDeviceId", "IsDeleted")
+                    b.HasIndex("MobileNumberId", "AppDeviceId", "IsDeleted")
                         .IsUnique()
                         .HasDatabaseName("UQ_Memberships_ActiveMembership");
 
@@ -507,10 +520,6 @@ namespace Ecliptix.Memberships.Persistor.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
-                    b.Property<string>("IpAddress")
-                        .HasMaxLength(45)
-                        .HasColumnType("nvarchar(45)");
-
                     b.Property<bool>("IsDeleted")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bit")
@@ -534,10 +543,6 @@ namespace Ecliptix.Memberships.Persistor.Migrations
                         .HasColumnType("datetime2")
                         .HasDefaultValueSql("GETUTCDATE()");
 
-                    b.Property<string>("UserAgent")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
                     b.HasKey("Id");
 
                     b.HasIndex("AttemptedAt")
@@ -545,9 +550,10 @@ namespace Ecliptix.Memberships.Persistor.Migrations
                         .HasDatabaseName("IX_MembershipAttempts_AttemptedAt")
                         .HasFilter("IsDeleted = 0");
 
-                    b.HasIndex("IpAddress")
-                        .HasDatabaseName("IX_MembershipAttempts_IpAddress")
-                        .HasFilter("IsDeleted = 0 AND IpAddress IS NOT NULL");
+                    b.HasIndex("CreatedAt")
+                        .IsDescending()
+                        .HasDatabaseName("IX_MembershipAttempt_CreatedAt")
+                        .HasFilter("IsDeleted = 0");
 
                     b.HasIndex("MembershipId")
                         .HasDatabaseName("IX_MembershipAttempts_MembershipId");
@@ -558,7 +564,12 @@ namespace Ecliptix.Memberships.Persistor.Migrations
 
                     b.HasIndex("UniqueId")
                         .IsUnique()
-                        .HasDatabaseName("UQ_MembershipAttempts_UniqueId");
+                        .HasDatabaseName("UQ_MembershipAttempt_UniqueId");
+
+                    b.HasIndex("UpdatedAt")
+                        .IsDescending()
+                        .HasDatabaseName("IX_MembershipAttempt_UpdatedAt")
+                        .HasFilter("IsDeleted = 0");
 
                     b.ToTable("MembershipAttempts", (string)null);
                 });
@@ -593,7 +604,7 @@ namespace Ecliptix.Memberships.Persistor.Migrations
                     b.Property<DateTime?>("LastUsedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<long>("PhoneNumberId")
+                    b.Property<long>("MobileNumberId")
                         .HasColumnType("bigint");
 
                     b.Property<string>("RelationshipType")
@@ -614,6 +625,11 @@ namespace Ecliptix.Memberships.Persistor.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CreatedAt")
+                        .IsDescending()
+                        .HasDatabaseName("IX_MobileDevice_CreatedAt")
+                        .HasFilter("IsDeleted = 0");
+
                     b.HasIndex("DeviceId")
                         .HasDatabaseName("IX_MobileDevices_DeviceId");
 
@@ -626,14 +642,19 @@ namespace Ecliptix.Memberships.Persistor.Migrations
                         .HasDatabaseName("IX_MobileDevices_LastUsedAt")
                         .HasFilter("IsDeleted = 0 AND LastUsedAt IS NOT NULL");
 
-                    b.HasIndex("PhoneNumberId")
-                        .HasDatabaseName("IX_MobileDevices_PhoneNumberId");
+                    b.HasIndex("MobileNumberId")
+                        .HasDatabaseName("IX_MobileDevices_MobileNumberId");
 
                     b.HasIndex("UniqueId")
                         .IsUnique()
-                        .HasDatabaseName("UQ_MobileDevices_UniqueId");
+                        .HasDatabaseName("UQ_MobileDevice_UniqueId");
 
-                    b.HasIndex("PhoneNumberId", "DeviceId")
+                    b.HasIndex("UpdatedAt")
+                        .IsDescending()
+                        .HasDatabaseName("IX_MobileDevice_UpdatedAt")
+                        .HasFilter("IsDeleted = 0");
+
+                    b.HasIndex("MobileNumberId", "DeviceId")
                         .IsUnique()
                         .HasDatabaseName("UQ_MobileDevices_PhoneDevice");
 
@@ -659,7 +680,7 @@ namespace Ecliptix.Memberships.Persistor.Migrations
                         .HasColumnType("bit")
                         .HasDefaultValue(false);
 
-                    b.Property<string>("PhoneNumber")
+                    b.Property<string>("Number")
                         .IsRequired()
                         .HasMaxLength(18)
                         .HasColumnType("nvarchar(18)");
@@ -691,13 +712,18 @@ namespace Ecliptix.Memberships.Persistor.Migrations
 
                     b.HasIndex("UniqueId")
                         .IsUnique()
-                        .HasDatabaseName("UQ_MobileNumbers_UniqueId");
+                        .HasDatabaseName("UQ_MobileNumber_UniqueId");
 
-                    b.HasIndex("PhoneNumber", "Region")
-                        .HasDatabaseName("IX_MobileNumbers_PhoneNumber_Region")
+                    b.HasIndex("UpdatedAt")
+                        .IsDescending()
+                        .HasDatabaseName("IX_MobileNumber_UpdatedAt")
                         .HasFilter("IsDeleted = 0");
 
-                    b.HasIndex("PhoneNumber", "Region", "IsDeleted")
+                    b.HasIndex("Number", "Region")
+                        .HasDatabaseName("IX_MobileNumbers_MobileNumber_Region")
+                        .HasFilter("IsDeleted = 0");
+
+                    b.HasIndex("Number", "Region", "IsDeleted")
                         .IsUnique()
                         .HasDatabaseName("UQ_MobileNumbers_ActiveNumberRegion")
                         .HasFilter("[Region] IS NOT NULL");
@@ -764,7 +790,7 @@ namespace Ecliptix.Memberships.Persistor.Migrations
 
                     b.HasIndex("CreatedAt")
                         .IsDescending()
-                        .HasDatabaseName("IX_OtpCodes_CreatedAt")
+                        .HasDatabaseName("IX_OtpCode_CreatedAt")
                         .HasFilter("IsDeleted = 0");
 
                     b.HasIndex("ExpiresAt")
@@ -777,7 +803,12 @@ namespace Ecliptix.Memberships.Persistor.Migrations
 
                     b.HasIndex("UniqueId")
                         .IsUnique()
-                        .HasDatabaseName("UQ_OtpCodes_UniqueId");
+                        .HasDatabaseName("UQ_OtpCode_UniqueId");
+
+                    b.HasIndex("UpdatedAt")
+                        .IsDescending()
+                        .HasDatabaseName("IX_OtpCode_UpdatedAt")
+                        .HasFilter("IsDeleted = 0");
 
                     b.HasIndex("VerificationFlowId")
                         .HasDatabaseName("IX_OtpCodes_VerificationFlowId");
@@ -816,13 +847,13 @@ namespace Ecliptix.Memberships.Persistor.Migrations
                         .HasColumnType("bit")
                         .HasDefaultValue(false);
 
+                    b.Property<long>("MobileNumberId")
+                        .HasColumnType("bigint");
+
                     b.Property<short>("OtpCount")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("smallint")
                         .HasDefaultValue((short)0);
-
-                    b.Property<long>("PhoneNumberId")
-                        .HasColumnType("bigint");
 
                     b.Property<string>("Purpose")
                         .IsRequired()
@@ -853,12 +884,17 @@ namespace Ecliptix.Memberships.Persistor.Migrations
                     b.HasIndex("AppDeviceId")
                         .HasDatabaseName("IX_VerificationFlows_AppDeviceId");
 
+                    b.HasIndex("CreatedAt")
+                        .IsDescending()
+                        .HasDatabaseName("IX_VerificationFlow_CreatedAt")
+                        .HasFilter("IsDeleted = 0");
+
                     b.HasIndex("ExpiresAt")
                         .HasDatabaseName("IX_VerificationFlows_ExpiresAt")
                         .HasFilter("IsDeleted = 0");
 
-                    b.HasIndex("PhoneNumberId")
-                        .HasDatabaseName("IX_VerificationFlows_PhoneNumberId");
+                    b.HasIndex("MobileNumberId")
+                        .HasDatabaseName("IX_VerificationFlows_MobileNumberId");
 
                     b.HasIndex("Status")
                         .HasDatabaseName("IX_VerificationFlows_Status")
@@ -866,7 +902,12 @@ namespace Ecliptix.Memberships.Persistor.Migrations
 
                     b.HasIndex("UniqueId")
                         .IsUnique()
-                        .HasDatabaseName("UQ_VerificationFlows_UniqueId");
+                        .HasDatabaseName("UQ_VerificationFlow_UniqueId");
+
+                    b.HasIndex("UpdatedAt")
+                        .IsDescending()
+                        .HasDatabaseName("IX_VerificationFlow_UpdatedAt")
+                        .HasFilter("IsDeleted = 0");
 
                     b.ToTable("VerificationFlows", null, t =>
                         {
@@ -911,9 +952,9 @@ namespace Ecliptix.Memberships.Persistor.Migrations
                         .IsRequired()
                         .HasConstraintName("FK_Memberships_Devices");
 
-                    b.HasOne("Ecliptix.Memberships.Persistor.Schema.Entities.MobileNumber", "PhoneNumber")
+                    b.HasOne("Ecliptix.Memberships.Persistor.Schema.Entities.MobileNumber", "MobileNumber")
                         .WithMany("Memberships")
-                        .HasForeignKey("PhoneNumberId")
+                        .HasForeignKey("MobileNumberId")
                         .HasPrincipalKey("UniqueId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired()
@@ -929,7 +970,7 @@ namespace Ecliptix.Memberships.Persistor.Migrations
 
                     b.Navigation("AppDevice");
 
-                    b.Navigation("PhoneNumber");
+                    b.Navigation("MobileNumber");
 
                     b.Navigation("VerificationFlow");
                 });
@@ -956,16 +997,16 @@ namespace Ecliptix.Memberships.Persistor.Migrations
                         .IsRequired()
                         .HasConstraintName("FK_MobileDevices_Devices");
 
-                    b.HasOne("Ecliptix.Memberships.Persistor.Schema.Entities.MobileNumber", "PhoneNumber")
+                    b.HasOne("Ecliptix.Memberships.Persistor.Schema.Entities.MobileNumber", "MobileNumber")
                         .WithMany("MobileDevices")
-                        .HasForeignKey("PhoneNumberId")
+                        .HasForeignKey("MobileNumberId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("FK_MobileDevices_MobileNumbers");
 
                     b.Navigation("Device");
 
-                    b.Navigation("PhoneNumber");
+                    b.Navigation("MobileNumber");
                 });
 
             modelBuilder.Entity("Ecliptix.Memberships.Persistor.Schema.Entities.OtpCode", b =>
@@ -990,16 +1031,16 @@ namespace Ecliptix.Memberships.Persistor.Migrations
                         .IsRequired()
                         .HasConstraintName("FK_VerificationFlows_Devices");
 
-                    b.HasOne("Ecliptix.Memberships.Persistor.Schema.Entities.MobileNumber", "PhoneNumber")
+                    b.HasOne("Ecliptix.Memberships.Persistor.Schema.Entities.MobileNumber", "MobileNumber")
                         .WithMany("VerificationFlows")
-                        .HasForeignKey("PhoneNumberId")
+                        .HasForeignKey("MobileNumberId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("FK_VerificationFlows_MobileNumbers");
 
                     b.Navigation("AppDevice");
 
-                    b.Navigation("PhoneNumber");
+                    b.Navigation("MobileNumber");
                 });
 
             modelBuilder.Entity("Ecliptix.Memberships.Persistor.Schema.Entities.Device", b =>

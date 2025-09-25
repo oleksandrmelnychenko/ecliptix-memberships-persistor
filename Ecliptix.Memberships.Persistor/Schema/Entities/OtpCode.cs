@@ -4,11 +4,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Ecliptix.Memberships.Persistor.Schema.Entities;
 
 [Table("OtpCodes")]
-public class OtpCode
+public class OtpCode : EntityBase
 {
-    [Key]
-    public long Id { get; set; }
-
     [Required]
     public long VerificationFlowId { get; set; }
 
@@ -26,14 +23,6 @@ public class OtpCode
     public short AttemptCount { get; set; } = 0;
 
     public DateTime? VerifiedAt { get; set; }
-
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-
-    public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
-
-    public bool IsDeleted { get; set; } = false;
-
-    public Guid UniqueId { get; set; } = Guid.NewGuid();
 
     [ForeignKey(nameof(VerificationFlowId))]
     public virtual VerificationFlow VerificationFlow { get; set; } = null!;

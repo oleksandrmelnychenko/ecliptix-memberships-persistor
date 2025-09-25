@@ -35,8 +35,8 @@ GO
 PRINT '🔧 Deploying core procedures...';
 GO
 
--- SP_EnsurePhoneNumber
-:r Ecliptix.Memberships.Persistor/StoredProcedures/Scripts/Core/SP_EnsurePhoneNumber.sql
+-- SP_EnsureMobileNumber
+:r Ecliptix.Memberships.Persistor/StoredProcedures/Scripts/Core/SP_EnsureMobileNumber.sql
 GO
 
 -- SP_RegisterAppDevice
@@ -91,8 +91,8 @@ GO
 IF OBJECT_ID('dbo.SP_LogEvent', 'P') IS NULL
     RAISERROR('SP_LogEvent not found', 16, 1);
 
-IF OBJECT_ID('dbo.SP_EnsurePhoneNumber', 'P') IS NULL
-    RAISERROR('SP_EnsurePhoneNumber not found', 16, 1);
+IF OBJECT_ID('dbo.SP_EnsureMobileNumber', 'P') IS NULL
+    RAISERROR('SP_EnsureMobileNumber not found', 16, 1);
 
 IF OBJECT_ID('dbo.SP_RegisterAppDevice', 'P') IS NULL
     RAISERROR('SP_RegisterAppDevice not found', 16, 1);

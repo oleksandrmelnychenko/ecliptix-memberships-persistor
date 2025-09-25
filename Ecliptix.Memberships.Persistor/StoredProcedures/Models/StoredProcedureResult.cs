@@ -5,69 +5,93 @@ namespace Ecliptix.Memberships.Persistor.StoredProcedures.Models;
 public class StoredProcedureResult<T>
 {
     public bool IsSuccess { get; set; }
-    public string Outcome { get; set; } = string.Empty;
+    public ProcedureOutcome Outcome { get; set; }
     public string? ErrorMessage { get; set; }
     public T? Data { get; set; }
     public DateTime ExecutedAt { get; set; } = DateTime.UtcNow;
 
-    public static StoredProcedureResult<T> Success(T data, string outcome = "success")
-    {
-        return new StoredProcedureResult<T>
+    public static StoredProcedureResult<T> Success(T data) =>
+        new()
         {
             IsSuccess = true,
-            Outcome = outcome,
+            Outcome = ProcedureOutcome.Success,
             Data = data
         };
-    }
 
-    public static StoredProcedureResult<T> Failure(string outcome, string? errorMessage = null)
-    {
-        return new StoredProcedureResult<T>
+    public static StoredProcedureResult<T> Failure(ProcedureOutcome outcome, string? errorMessage = null) =>
+        new()
         {
             IsSuccess = false,
             Outcome = outcome,
             ErrorMessage = errorMessage
         };
-    }
 }
 
-public class PhoneNumberData
+public record MobileNumberData
 {
-    public long PhoneNumberId { get; set; }
-    public Guid UniqueId { get; set; }
-    public bool IsNewlyCreated { get; set; }
+    public long MobileNumberId { get; init; }
+    public Guid UniqueId { get; init; }
+    public bool IsNewlyCreated { get; init; }
 }
 
-public class DeviceRegistrationData
+public record DeviceRegistrationData
 {
-    public long DeviceRecordId { get; set; }
-    public Guid DeviceUniqueId { get; set; }
-    public bool IsNewlyCreated { get; set; }
+    public long DeviceRecordId { get; init; }
+    public Guid DeviceUniqueId { get; init; }
+    public bool IsNewlyCreated { get; init; }
 }
 
-public class VerificationFlowData
+public record VerificationFlowData
 {
-    public Guid FlowUniqueId { get; set; }
-    public DateTime? ExpiresAt { get; set; }
+    public Guid FlowUniqueId { get; init; }
+    public DateTime? ExpiresAt { get; init; }
 }
 
-public class OtpGenerationData
+public record OtpGenerationData
 {
-    public string OtpCode { get; set; } = string.Empty;
-    public Guid OtpUniqueId { get; set; }
-    public DateTime ExpiresAt { get; set; }
+    public string OtpCode { get; init; } = string.Empty;
+    public Guid OtpUniqueId { get; init; }
+    public DateTime ExpiresAt { get; init; }
 }
 
-public class OtpVerificationData
+public record OtpVerificationData
 {
-    public bool IsValid { get; set; }
-    public DateTime? VerifiedAt { get; set; }
-    public int RemainingAttempts { get; set; }
+    public bool IsValid { get; init; }
+    public DateTime? VerifiedAt { get; init; }
+    public int RemainingAttempts { get; init; }
 }
 
-public class CreateMembershipData
+public record RequestResendOtpData
 {
-    public Guid MembershipUniqueId { get; set; }
-    public string Status { get; set; } = string.Empty;
-    public string CreationStatus { get; set; } = string.Empty;
+    public string Outcome { get; init; } = string.Empty;
+}
+
+public record UpdateVerificationFlowStatusData
+{
+    public int RowsAffected { get; init; }
+}
+
+public record VerifyMobileForSecretKeyRecoveryData
+{
+    public Guid MobileNumberUniqueId { get; init; }
+}
+
+public record GetMobileNumberData
+{
+    public string MobileNUmber { get; init; } = string.Empty;
+    public string? Region { get; init; }
+    public Guid MobileNumberUniqueId { get; init; }
+}
+
+public record ExpireAssociatedOtpData
+{
+    public Guid FlowUniqueId { get; init; }
+}
+
+public record MembershipQueryData
+{
+    public required Guid UniqueIdentifier { get; init; }
+    public required MembershipActivityStatus ActivityStatus { get; init; }
+    public MembershipCreationStatus CreationStatus { get; init; }
+    public byte[] SecureKey { get; init; } = [];
 }

@@ -4,13 +4,10 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Ecliptix.Memberships.Persistor.Schema.Entities;
 
 [Table("Memberships")]
-public class Membership
+public class Membership : EntityBase
 {
-    [Key]
-    public long Id { get; set; }
-
     [Required]
-    public Guid PhoneNumberId { get; set; }
+    public Guid MobileNumberId { get; set; }
 
     [Required]
     public Guid AppDeviceId { get; set; }
@@ -27,16 +24,8 @@ public class Membership
     [MaxLength(20)]
     public string? CreationStatus { get; set; }
 
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-
-    public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
-
-    public bool IsDeleted { get; set; } = false;
-
-    public Guid UniqueId { get; set; } = Guid.NewGuid();
-
-    [ForeignKey(nameof(PhoneNumberId))]
-    public virtual MobileNumber PhoneNumber { get; set; } = null!;
+    [ForeignKey(nameof(MobileNumberId))]
+    public virtual MobileNumber MobileNumber { get; set; } = null!;
 
     [ForeignKey(nameof(AppDeviceId))]
     public virtual Device AppDevice { get; set; } = null!;

@@ -25,16 +25,16 @@ public class EcliptixSchemaContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
-        modelBuilder.ApplyConfiguration(new MobileNumberConfiguration());
-        modelBuilder.ApplyConfiguration(new DeviceConfiguration());
-        modelBuilder.ApplyConfiguration(new VerificationFlowConfiguration());
-        modelBuilder.ApplyConfiguration(new OtpCodeConfiguration());
-        modelBuilder.ApplyConfiguration(new FailedOtpAttemptConfiguration());
-        modelBuilder.ApplyConfiguration(new MembershipConfiguration());
-        modelBuilder.ApplyConfiguration(new MembershipAttemptConfiguration());
-        modelBuilder.ApplyConfiguration(new LoginAttemptConfiguration());
-        modelBuilder.ApplyConfiguration(new EventLogConfiguration());
-        modelBuilder.ApplyConfiguration(new MobileDeviceConfiguration());
+        modelBuilder.AddConfiguration(new MobileNumberConfiguration());
+        modelBuilder.AddConfiguration(new DeviceConfiguration());
+        modelBuilder.AddConfiguration(new VerificationFlowConfiguration());
+        modelBuilder.AddConfiguration(new OtpCodeConfiguration());
+        modelBuilder.AddConfiguration(new FailedOtpAttemptConfiguration());
+        modelBuilder.AddConfiguration(new MembershipConfiguration());
+        modelBuilder.AddConfiguration(new MembershipAttemptConfiguration());
+        modelBuilder.AddConfiguration(new LoginAttemptConfiguration());
+        modelBuilder.AddConfiguration(new EventLogConfiguration());
+        modelBuilder.AddConfiguration(new MobileDeviceConfiguration());
     }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)

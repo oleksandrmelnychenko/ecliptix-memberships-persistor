@@ -3,6 +3,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Ecliptix.Memberships.Persistor.StoredProcedures.Interfaces;
 using Ecliptix.Memberships.Persistor.StoredProcedures.Models;
+using Ecliptix.Memberships.Persistor.StoredProcedures.Models.Enums;
+using Ecliptix.Memberships.Persistor.StoredProcedures.Utilities;
 
 namespace Ecliptix.Memberships.Persistor.StoredProcedures.Services;
 
@@ -28,16 +30,15 @@ public class StoredProcedureExecutor : IStoredProcedureExecutor
         {
             _logger.LogDebug("Executing stored procedure: {ProcedureName}", procedureName);
 
-            using SqlConnection connection = new SqlConnection(_connectionString);
+            await using SqlConnection connection = new SqlConnection(_connectionString);
             await connection.OpenAsync(cancellationToken);
 
-            using SqlCommand command = new SqlCommand(procedureName, connection)
-            {
-                CommandType = System.Data.CommandType.StoredProcedure,
-                CommandTimeout = 30
-            };
+            await using SqlCommand command = new SqlCommand(procedureName, connection);
+            
+            command.CommandType = System.Data.CommandType.StoredProcedure;
+            command.CommandTimeout = 30;
 
-            if (parameters != null)
+            if (parameters.Length > 0)
             {
                 command.Parameters.AddRange(parameters);
             }
@@ -50,19 +51,19 @@ public class StoredProcedureExecutor : IStoredProcedureExecutor
                 return StoredProcedureResult<T>.Success(data);
             }
 
-            return StoredProcedureResult<T>.Failure("no_data", "No data returned from stored procedure");
+            return StoredProcedureResult<T>.Failure(ProcedureOutcome.NoData, "No data returned from stored procedure");
         }
         catch (SqlException sqlEx)
         {
             _logger.LogError(sqlEx, "SQL error executing stored procedure {ProcedureName}: {ErrorMessage}",
                 procedureName, sqlEx.Message);
-            return StoredProcedureResult<T>.Failure("sql_error", sqlEx.Message);
+            return StoredProcedureResult<T>.Failure(ProcedureOutcome.SqlError, sqlEx.Message);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error executing stored procedure {ProcedureName}: {ErrorMessage}",
                 procedureName, ex.Message);
-            return StoredProcedureResult<T>.Failure("error", ex.Message);
+            return StoredProcedureResult<T>.Failure(ProcedureOutcome.Error, ex.Message);
         }
     }
 
@@ -76,16 +77,14 @@ public class StoredProcedureExecutor : IStoredProcedureExecutor
         {
             _logger.LogDebug("Executing stored procedure with output: {ProcedureName}", procedureName);
 
-            using SqlConnection connection = new SqlConnection(_connectionString);
+            await using SqlConnection connection = new SqlConnection(_connectionString);
             await connection.OpenAsync(cancellationToken);
 
-            using SqlCommand command = new SqlCommand(procedureName, connection)
-            {
-                CommandType = System.Data.CommandType.StoredProcedure,
-                CommandTimeout = 30
-            };
+            await using SqlCommand command = new SqlCommand(procedureName, connection);
+            command.CommandType = System.Data.CommandType.StoredProcedure;
+            command.CommandTimeout = 30;
 
-            if (parameters != null)
+            if (parameters.Length > 0)
             {
                 command.Parameters.AddRange(parameters);
             }
@@ -99,13 +98,13 @@ public class StoredProcedureExecutor : IStoredProcedureExecutor
         {
             _logger.LogError(sqlEx, "SQL error executing stored procedure {ProcedureName}: {ErrorMessage}",
                 procedureName, sqlEx.Message);
-            return StoredProcedureResult<T>.Failure("sql_error", sqlEx.Message);
+            return StoredProcedureResult<T>.Failure(ProcedureOutcome.Error, sqlEx.Message);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error executing stored procedure {ProcedureName}: {ErrorMessage}",
                 procedureName, ex.Message);
-            return StoredProcedureResult<T>.Failure("error", ex.Message);
+            return StoredProcedureResult<T>.Failure(ProcedureOutcome.Error, ex.Message);
         }
     }
 
@@ -118,16 +117,14 @@ public class StoredProcedureExecutor : IStoredProcedureExecutor
         {
             _logger.LogDebug("Executing non-query stored procedure: {ProcedureName}", procedureName);
 
-            using SqlConnection connection = new SqlConnection(_connectionString);
+            await using SqlConnection connection = new SqlConnection(_connectionString);
             await connection.OpenAsync(cancellationToken);
 
-            using SqlCommand command = new SqlCommand(procedureName, connection)
-            {
-                CommandType = System.Data.CommandType.StoredProcedure,
-                CommandTimeout = 30
-            };
+            await using SqlCommand command = new SqlCommand(procedureName, connection);
+            command.CommandType = System.Data.CommandType.StoredProcedure;
+            command.CommandTimeout = 30;
 
-            if (parameters != null)
+            if (parameters.Length > 0)
             {
                 command.Parameters.AddRange(parameters);
             }
@@ -140,13 +137,63 @@ public class StoredProcedureExecutor : IStoredProcedureExecutor
         {
             _logger.LogError(sqlEx, "SQL error executing stored procedure {ProcedureName}: {ErrorMessage}",
                 procedureName, sqlEx.Message);
-            return StoredProcedureResult<object>.Failure("sql_error", sqlEx.Message);
+            return StoredProcedureResult<object>.Failure(ProcedureOutcome.SqlError, sqlEx.Message);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error executing stored procedure {ProcedureName}: {ErrorMessage}",
                 procedureName, ex.Message);
-            return StoredProcedureResult<object>.Failure("error", ex.Message);
+            return StoredProcedureResult<object>.Failure(ProcedureOutcome.Error, ex.Message);
+        }
+    }
+
+    public async Task<StoredProcedureResult<T>> ExecuteWithOutcomeAsync<T>(
+        string procedureName,
+        SqlParameter[] parameters,
+        Func<SqlParameter[], T> mapResult,
+        short outcomeIndex,
+        short errorIndex,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            _logger.LogDebug("Executing stored procedure with outcome: {ProcedureName}", procedureName);
+
+            await using SqlConnection connection = new SqlConnection(_connectionString);
+            await connection.OpenAsync();
+
+            await using SqlCommand command = new SqlCommand(procedureName, connection);
+            command.CommandType = System.Data.CommandType.StoredProcedure;
+            command.CommandTimeout = 30;
+
+            if (parameters.Length > 0)
+            {
+                command.Parameters.AddRange(parameters);
+            }
+
+            await command.ExecuteNonQueryAsync(cancellationToken);
+            
+            string? outcomeRaw = parameters[outcomeIndex].Value?.ToString();
+            string? errorMessage = parameters[errorIndex].Value?.ToString();
+            ProcedureOutcome outcome = ProcedureResultMapper.ToProcedureOutcome(outcomeRaw, _logger);
+
+            if (outcome == ProcedureOutcome.Success)
+            {
+                T data = mapResult(parameters);
+                return StoredProcedureResult<T>.Success(data);
+            }
+            
+            return StoredProcedureResult<T>.Failure(outcome, errorMessage);
+        }
+        catch (SqlException sqlEx)
+        {
+            _logger.LogError(sqlEx, "SQL error executing stored procedure {ProcedureName}: {ErrorMessage}", procedureName, sqlEx.Message);
+            return StoredProcedureResult<T>.Failure(ProcedureOutcome.SqlError, sqlEx.Message);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error executing stored procedure {ProcedureName}: {ErrorMessage}", procedureName, ex.Message);
+            return StoredProcedureResult<T>.Failure(ProcedureOutcome.Error, ex.Message);
         }
     }
 }

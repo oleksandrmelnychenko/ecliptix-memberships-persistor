@@ -4,21 +4,18 @@ using Ecliptix.Memberships.Persistor.Schema.Entities;
 
 namespace Ecliptix.Memberships.Persistor.Schema.Configurations;
 
-public class LoginAttemptConfiguration : IEntityTypeConfiguration<LoginAttempt>
+public class LoginAttemptConfiguration : EntityBaseMap<LoginAttempt>
 {
-    public void Configure(EntityTypeBuilder<LoginAttempt> builder)
+    public override void Map(EntityTypeBuilder<LoginAttempt> builder)
     {
+        base.Map(builder);
+        
         builder.ToTable("LoginAttempts");
-
-        builder.HasKey(e => e.Id);
-
-        builder.Property(e => e.Id)
-            .UseIdentityColumn();
 
         builder.Property(e => e.MembershipId)
             .IsRequired();
 
-        builder.Property(e => e.PhoneNumber)
+        builder.Property(e => e.MobileNumber)
             .HasMaxLength(18);
 
         builder.Property(e => e.Outcome)
@@ -37,33 +34,11 @@ public class LoginAttemptConfiguration : IEntityTypeConfiguration<LoginAttempt>
         builder.Property(e => e.ErrorMessage)
             .HasMaxLength(500);
 
-        builder.Property(e => e.IpAddress)
-            .HasMaxLength(45);
-
-        builder.Property(e => e.UserAgent)
-            .HasMaxLength(500);
-
         builder.Property(e => e.SessionId)
             .HasMaxLength(100);
 
         builder.Property(e => e.AttemptedAt)
             .HasDefaultValueSql("GETUTCDATE()");
-
-        builder.Property(e => e.CreatedAt)
-            .HasDefaultValueSql("GETUTCDATE()");
-
-        builder.Property(e => e.UpdatedAt)
-            .HasDefaultValueSql("GETUTCDATE()");
-
-        builder.Property(e => e.IsDeleted)
-            .HasDefaultValue(false);
-
-        builder.Property(e => e.UniqueId)
-            .HasDefaultValueSql("NEWID()");
-
-        builder.HasIndex(e => e.UniqueId)
-            .IsUnique()
-            .HasDatabaseName("UQ_LoginAttempts_UniqueId");
 
         builder.HasIndex(e => e.MembershipId)
             .HasDatabaseName("IX_LoginAttempts_MembershipId");
@@ -77,17 +52,13 @@ public class LoginAttemptConfiguration : IEntityTypeConfiguration<LoginAttempt>
             .HasFilter("IsDeleted = 0")
             .HasDatabaseName("IX_LoginAttempts_Status");
 
-        builder.HasIndex(e => e.IpAddress)
-            .HasFilter("IsDeleted = 0 AND IpAddress IS NOT NULL")
-            .HasDatabaseName("IX_LoginAttempts_IpAddress");
-
         builder.HasIndex(e => e.SessionId)
             .HasFilter("IsDeleted = 0 AND SessionId IS NOT NULL")
             .HasDatabaseName("IX_LoginAttempts_SessionId");
 
-        builder.HasIndex(e => e.PhoneNumber)
-            .HasFilter("IsDeleted = 0 AND PhoneNumber IS NOT NULL")
-            .HasDatabaseName("IX_LoginAttempts_PhoneNumber");
+        builder.HasIndex(e => e.MobileNumber)
+            .HasFilter("IsDeleted = 0 AND MobileNumber IS NOT NULL")
+            .HasDatabaseName("IX_LoginAttempts_MobileNumber");
 
         builder.HasIndex(e => e.Outcome)
             .HasFilter("IsDeleted = 0 AND Outcome IS NOT NULL")

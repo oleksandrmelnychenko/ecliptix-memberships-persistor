@@ -9,8 +9,6 @@
 CREATE OR ALTER PROCEDURE dbo.SP_VerifyOtpCode
     @FlowUniqueId UNIQUEIDENTIFIER,
     @OtpCode NVARCHAR(10),
-    @IpAddress NVARCHAR(45) = NULL,
-    @UserAgent NVARCHAR(500) = NULL,
     @IsValid BIT OUTPUT,
     @Outcome NVARCHAR(50) OUTPUT,
     @ErrorMessage NVARCHAR(500) OUTPUT,
@@ -82,10 +80,7 @@ BEGIN
                 @EventType = 'otp_verified',
                 @Message = 'OTP code successfully verified',
                 @EntityType = 'VerificationFlow',
-                @EntityId = @FlowId,
-                @IpAddress = @IpAddress,
-                @UserAgent = @UserAgent;
-
+                @EntityId = @FlowId
         END
         ELSE
         BEGIN
@@ -110,11 +105,11 @@ BEGIN
                 -- Log failed attempt
                 INSERT INTO dbo.FailedOtpAttempts (
                     OtpRecordId, AttemptedValue, FailureReason,
-                    IpAddress, UserAgent, AttemptedAt, CreatedAt, UpdatedAt
+                    AttemptedAt, CreatedAt, UpdatedAt
                 )
                 VALUES (
                     @OtpId, @OtpCode, 'invalid_code',
-                    @IpAddress, @UserAgent, GETUTCDATE(), GETUTCDATE(), GETUTCDATE()
+                    GETUTCDATE(), GETUTCDATE(), GETUTCDATE()
                 );
 
                 -- 6. Check if max attempts exceeded
@@ -138,9 +133,7 @@ BEGIN
                         @Severity = 'warning',
                         @Message = 'Maximum OTP verification attempts exceeded',
                         @EntityType = 'VerificationFlow',
-                        @EntityId = @FlowId,
-                        @IpAddress = @IpAddress,
-                        @UserAgent = @UserAgent;
+                        @EntityId = @FlowId
                 END
                 ELSE
                 BEGIN
@@ -162,9 +155,7 @@ BEGIN
                     @Message = 'OTP verification failed',
                     @Details = @ErrorMessage,
                     @EntityType = 'VerificationFlow',
-                    @EntityId = @FlowId,
-                    @IpAddress = @IpAddress,
-                    @UserAgent = @UserAgent;
+                    @EntityId = @FlowId
             END
         END
 
