@@ -29,6 +29,7 @@ namespace Ecliptix.Memberships.Persistor.Migrations
             migrationBuilder.Sql(File.ReadAllText("StoredProcedures/Scripts/Verification/SP_VerifyPhoneForSecretKeyRecovery.sql"));
             migrationBuilder.Sql(File.ReadAllText("StoredProcedures/Scripts/Verification/SP_GetMobileNumber.sql"));
             migrationBuilder.Sql(File.ReadAllText("StoredProcedures/Scripts/Verification/SP_UpdateOtpStatus.sql"));
+            migrationBuilder.Sql(File.ReadAllText("StoredProcedures/Scripts/Verification/SP_ExpireAssociatedOtp.sql"));
             
             // 5. FINAL LOG
             migrationBuilder.Sql(@"
@@ -56,6 +57,7 @@ namespace Ecliptix.Memberships.Persistor.Migrations
             migrationBuilder.Sql("DROP PROCEDURE IF EXISTS dbo.SP_VerifyPhoneForSecretKeyRecovery");
             migrationBuilder.Sql("DROP PROCEDURE IF EXISTS dbo.SP_GetMobileNumber");
             migrationBuilder.Sql("DROP PROCEDURE IF EXISTS dbo.SP_UpdateOtpStatus");
+            migrationBuilder.Sql("DROP PROCEDURE IF EXISTS dbo.SP_ExpireAssociatedOtp");
         }
     }
 }

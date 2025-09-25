@@ -83,6 +83,11 @@ public record GetMobileNumberData
     public Guid MobileNumberUniqueId { get; init; }
 }
 
+public record ExpireAssociatedOtpData
+{
+    public Guid FlowUniqueId { get; init; }
+}
+
 public record MembershipQueryData
 {
     public required Guid UniqueIdentifier { get; init; }

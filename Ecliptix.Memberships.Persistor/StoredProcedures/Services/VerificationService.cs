@@ -284,4 +284,28 @@ public class VerificationService : IVerificationService
             cancellationToken
         );
     }
+
+    public async Task<StoredProcedureResult<ExpireAssociatedOtpData>> ExpireAssociatedOtpAsync(
+        Guid flowUniqueId,
+        CancellationToken cancellationToken = default)
+    {
+        _logger.LogDebug("Expiring associated OTP for flow: {FlowId}", flowUniqueId);
+        SqlParameter[] parameters =
+        [
+            SqlParameterHelper.In("@FlowUniqueId", flowUniqueId),
+            SqlParameterHelper.Out("@Outcome", SqlDbType.NVarChar, Constants.OutcomeLength),
+            SqlParameterHelper.Out("@ErrorMessage", SqlDbType.NVarChar, Constants.ErrorMessageLength)
+        ];
+        
+        return await _executor.ExecuteWithOutcomeAsync(
+            "dbo.SP_ExpireAssociatedOtp",
+            parameters,
+            _ => new ExpireAssociatedOtpData{
+                FlowUniqueId = flowUniqueId
+            },
+            outcomeIndex: 1,
+            errorIndex: 2,
+            cancellationToken
+        );
+    }
 }
