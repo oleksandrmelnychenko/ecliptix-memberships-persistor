@@ -4,16 +4,13 @@ using Ecliptix.Memberships.Persistor.Schema.Entities;
 
 namespace Ecliptix.Memberships.Persistor.Schema.Configurations;
 
-public class MembershipConfiguration : IEntityTypeConfiguration<Membership>
+public class MembershipConfiguration : EntityBaseMap<Membership>
 {
-    public void Configure(EntityTypeBuilder<Membership> builder)
+    public override void Map(EntityTypeBuilder<Membership> builder)
     {
+        base.Map(builder);
+        
         builder.ToTable("Memberships");
-
-        builder.HasKey(e => e.Id);
-
-        builder.Property(e => e.Id)
-            .UseIdentityColumn();
 
         builder.Property(e => e.MobileNumberId)
             .IsRequired();
@@ -34,18 +31,6 @@ public class MembershipConfiguration : IEntityTypeConfiguration<Membership>
 
         builder.Property(e => e.CreationStatus)
             .HasMaxLength(20);
-
-        builder.Property(e => e.CreatedAt)
-            .HasDefaultValueSql("GETUTCDATE()");
-
-        builder.Property(e => e.UpdatedAt)
-            .HasDefaultValueSql("GETUTCDATE()");
-
-        builder.Property(e => e.IsDeleted)
-            .HasDefaultValue(false);
-
-        builder.Property(e => e.UniqueId)
-            .HasDefaultValueSql("NEWID()");
 
         builder.ToTable(t => t.HasCheckConstraint("CHK_Memberships_Status",
             "Status IN ('active', 'inactive')"));
