@@ -229,4 +229,34 @@ public class VerificationService : IVerificationService
             cancellationToken
         );
     }
+
+    public async Task<StoredProcedureResult<GetMobileNumberData>> GetMobileNumberAsync(
+        Guid phoneNumberIdentifier,
+        CancellationToken cancellationToken = default)
+    {
+        _logger.LogDebug("Getting Mobile number for identifier: {Identifier}", phoneNumberIdentifier);
+        
+        SqlParameter[] parameters =
+        [
+            SqlParameterHelper.In("@PhoneNumberIdentifier", phoneNumberIdentifier),
+            SqlParameterHelper.Out("@MobileNumber", SqlDbType.NVarChar, 18),
+            SqlParameterHelper.Out("@Region", SqlDbType.NVarChar, 2),
+            SqlParameterHelper.Out("@MobileNumberUniqueId", SqlDbType.UniqueIdentifier),
+            SqlParameterHelper.Out("@Outcome", SqlDbType.NVarChar, Constants.OutcomeLength),
+            SqlParameterHelper.Out("@ErrorMessage", SqlDbType.NVarChar, Constants.ErrorMessageLength)
+        ];
+        
+        return await _executor.ExecuteWithOutcomeAsync(
+            "dbo.SP_GetMobileNumber",
+            parameters,
+            outputParams => new GetMobileNumberData{
+                MobileNUmber = outputParams[1].Value?.ToString() ?? "",
+                Region = outputParams[2].Value?.ToString(),
+                MobileNumberUniqueId = (Guid)outputParams[3].Value
+            },
+            outcomeIndex: 4,
+            errorIndex: 5,
+            cancellationToken
+        );
+    }
 }

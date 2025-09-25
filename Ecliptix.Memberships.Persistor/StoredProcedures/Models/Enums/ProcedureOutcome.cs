@@ -5,6 +5,7 @@ public enum ProcedureOutcome
     Success,
     Updated,
     Verified,
+    Found,
 
     AlreadyExists,
     Error,
@@ -19,7 +20,7 @@ public enum ProcedureOutcome
     NoData,
     NoActiveOtp,
     NoSecureKey,
-    PhoneNotFound,
+    MobileNotFound,
     RateLimitExceeded,
     SqlError
 }

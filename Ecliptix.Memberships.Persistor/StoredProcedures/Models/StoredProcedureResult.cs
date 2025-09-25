@@ -76,6 +76,13 @@ public record VerifyMobileForSecretKeyRecoveryData
     public Guid MobileNumberUniqueId { get; init; }
 }
 
+public record GetMobileNumberData
+{
+    public string MobileNUmber { get; init; } = string.Empty;
+    public string? Region { get; init; }
+    public Guid MobileNumberUniqueId { get; init; }
+}
+
 public record MembershipQueryData
 {
     public required Guid UniqueIdentifier { get; init; }
