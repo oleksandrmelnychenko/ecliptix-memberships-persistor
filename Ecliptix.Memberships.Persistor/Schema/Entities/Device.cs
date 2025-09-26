@@ -3,13 +3,10 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Ecliptix.Memberships.Persistor.Schema.Entities;
 
-[Table("Devices")]
 public class Device : EntityBase
 {
-    [Required]
     public Guid AppInstanceId { get; set; }
 
-    [Required]
     public Guid DeviceId { get; set; }
 
     public int DeviceType { get; set; } = 1;
