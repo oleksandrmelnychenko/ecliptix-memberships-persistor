@@ -73,8 +73,18 @@ BEGIN
         -- 3. Handle related actions
         IF @NewStatus = 'failed'
         BEGIN
-            INSERT INTO dbo.FailedOtpAttempts (OtpUniqueId, FlowUniqueId, CreatedAt)
-            VALUES (@OtpUniqueId, @FlowUniqueId, GETUTCDATE());
+            INSERT INTO dbo.FailedOtpAttempts (
+                OtpRecordId,
+                AttemptedValue,
+                FailureReason,
+                AttemptedAt
+            )
+            VALUES (
+                (SELECT Id FROM dbo.OtpRecords WHERE UniqueId = @OtpUniqueId),
+                '', -- AttemptedValue (provide actual value if available)
+                'status_failed', -- FailureReason (customize as needed)
+                GETUTCDATE()
+            );
         END
         ELSE IF @NewStatus = 'verified'
         BEGIN
@@ -86,12 +96,15 @@ BEGIN
 
         SET @Outcome = 'updated';
 
+        -- Prepare log message
+        DECLARE @LogMessage NVARCHAR(200) = 'OTP status updated to ' + @NewStatus;
+
         -- Log status update
         EXEC dbo.SP_LogEvent
-            @EventType = 'otp_status_updated',
-            @Message = CONCAT('OTP status updated to ', @NewStatus),
-            @EntityType = 'OtpRecord',
-            @EntityId = @OtpUniqueId;
+            'otp_status_updated',
+            @LogMessage,
+            'OtpRecord',
+            @OtpUniqueId;
 
         COMMIT TRANSACTION;
     END TRY
@@ -102,15 +115,17 @@ BEGIN
         SET @Outcome = 'error';
         SET @ErrorMessage = ERROR_MESSAGE();
 
+        -- Prepare error log message
+        DECLARE @ErrorLogMessage NVARCHAR(200) = 'Error during OTP status update: ' + ISNULL(@ErrorMessage, '');
+
         -- Log the error
         EXEC dbo.SP_LogEvent
-            @EventType = 'otp_status_update_error',
-            @Severity = 'error',
-            @Message = 'Error during OTP status update',
-            @Details = @ErrorMessage;
+            'otp_status_update_error',
+            @ErrorLogMessage,
+            'OtpRecord',
+            @OtpUniqueId;
 
         RAISERROR (@ErrorMessage, 16, 1);
     END CATCH
 END
 GO
-
