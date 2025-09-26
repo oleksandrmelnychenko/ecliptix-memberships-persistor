@@ -17,6 +17,10 @@ public class Membership : EntityBase
 
     public byte[]? SecureKey { get; set; }
 
+    public byte[]? MaskingKey { get; set; } 
+
+    public byte[]? Mac { get; set; } 
+
     [Required]
     [MaxLength(20)]
     public string Status { get; set; } = "inactive";

@@ -24,6 +24,13 @@ public class MembershipConfiguration : EntityBaseMap<Membership>
         builder.Property(e => e.SecureKey)
             .HasColumnType("VARBINARY(MAX)");
 
+        builder.Property(e => e.MaskingKey)
+            .HasColumnName("MAC (UUID)")
+            .HasColumnType("VARBINARY(32)");
+
+        builder.Property(e => e.Mac)
+            .HasColumnType("VARBINARY(64)");
+
         builder.Property(e => e.Status)
             .IsRequired()
             .HasMaxLength(20)
