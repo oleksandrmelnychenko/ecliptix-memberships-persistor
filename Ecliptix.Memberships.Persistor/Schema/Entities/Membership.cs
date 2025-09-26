@@ -1,4 +1,3 @@
-
 namespace Ecliptix.Memberships.Persistor.Schema.Entities;
 
 public class Membership : EntityBase
@@ -7,6 +6,10 @@ public class Membership : EntityBase
     public Guid AppDeviceId { get; set; }
     public Guid VerificationFlowId { get; set; }
     public byte[]? SecureKey { get; set; }
+
+    public byte[]? MaskingKey { get; set; }
+    public byte[]? Mac { get; set; } 
+
     public string Status { get; set; } = "inactive";
     public string? CreationStatus { get; set; }
 
