@@ -28,7 +28,7 @@ BEGIN
 
         -- 1. Get Mobile number record
         SELECT TOP 1
-            @MobileNumber = MobileNumber,
+            @MobileNumber = Number,
             @Region = Region,
             @MobileNumberUniqueId = UniqueId
         FROM dbo.MobileNumbers

@@ -43,12 +43,15 @@ BEGIN
 
         SET @Outcome = 'updated';
 
+        -- Prepare log message
+        DECLARE @LogMessage NVARCHAR(200) = 'Verification flow status updated to ' + @NewStatus;
+
         -- Log status update
         EXEC dbo.SP_LogEvent
-            @EventType = 'verification_flow_status_updated',
-            @Message = CONCAT('Verification flow status updated to ', @NewStatus),
-            @EntityType = 'VerificationFlow',
-            @EntityId = @FlowUniqueId;
+            'verification_flow_status_updated',
+            @LogMessage,
+            'VerificationFlow',
+            @FlowUniqueId;
 
         COMMIT TRANSACTION;
     END TRY
@@ -59,15 +62,17 @@ BEGIN
         SET @Outcome = 'error';
         SET @ErrorMessage = ERROR_MESSAGE();
 
+        -- Prepare log message
+        DECLARE @ErrorLogMessage NVARCHAR(200) = 'Verification flow status update failed: ' + ISNULL(@ErrorMessage, '');
+
         -- Log the error
         EXEC dbo.SP_LogEvent
-            @EventType = 'verification_flow_status_error',
-            @Severity = 'error',
-            @Message = 'Error during verification flow status update',
-            @Details = @ErrorMessage;
+            'verification_flow_status_update_error',
+            @ErrorLogMessage,
+            'VerificationFlow',
+            @FlowUniqueId;
 
         RAISERROR (@ErrorMessage, 16, 1);
     END CATCH
 END
 GO
-

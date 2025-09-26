@@ -1,7 +1,7 @@
 -- ============================================================================
--- SP_VerifyPhoneForSecretKeyRecovery - Verify phone for secret key recovery
+-- SP_VerifyMobileForSecretKeyRecovery - Verify mobile for secret key recovery
 -- ============================================================================
--- Purpose: Checks if a phone number is eligible for secret key recovery
+-- Purpose: Checks if a mobile number is eligible for secret key recovery
 -- Author: MrReptile
 -- Created: 2025-09-25
 -- ============================================================================
@@ -27,35 +27,35 @@ BEGIN
     BEGIN TRY
         BEGIN TRANSACTION;
 
-        -- 1. Find phone number
+        -- 1. Find mobile number
         SELECT @MobileNumberUniqueId = UniqueId
-        FROM dbo.PhoneNumbers
-        WHERE PhoneNumber = @MobileNumber
+        FROM dbo.MobileNumbers
+        WHERE Number = @MobileNumber
           AND (Region = @Region OR (Region IS NULL AND @Region IS NULL))
           AND IsDeleted = 0;
 
         IF @MobileNumberUniqueId IS NULL
         BEGIN
-            SET @Outcome = 'phone_not_found';
-            SET @ErrorMessage = 'Phone number not found';
+            SET @Outcome = 'mobile_not_found';
+            SET @ErrorMessage = 'Mobile number not found';
             ROLLBACK TRANSACTION;
             RETURN;
         END
 
-        -- 2. Find active membership for this phone number
+        -- 2. Find active membership for this mobile number
         SELECT TOP 1
             @MembershipStatus = Status,
             @CreationStatus = CreationStatus,
             @HasSecureKey = CASE WHEN SecureKey IS NOT NULL AND DATALENGTH(SecureKey) > 0 THEN 1 ELSE 0 END
         FROM dbo.Memberships
-        WHERE PhoneNumberId = @MobileNumberUniqueId
+        WHERE MobileNumberId = @MobileNumberUniqueId
           AND IsDeleted = 0
         ORDER BY CreatedAt DESC;
 
         IF @MembershipStatus IS NULL
         BEGIN
             SET @Outcome = 'membership_not_found';
-            SET @ErrorMessage = 'No membership found for this phone number';
+            SET @ErrorMessage = 'No membership found for this mobile number';
             ROLLBACK TRANSACTION;
             RETURN;
         END
