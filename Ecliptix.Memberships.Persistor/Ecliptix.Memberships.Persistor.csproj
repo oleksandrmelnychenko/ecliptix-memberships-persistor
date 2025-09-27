@@ -27,6 +27,12 @@
   <ItemGroup>
     <EmbeddedResource Include="Migrations\**\*.sql" />
   </ItemGroup>
+    
+  <ItemGroup>
+      <None Update="StoredProcedures\**\*.sql">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+  </ItemGroup>
 
   <ItemGroup>
     <None Update="appsettings.json">
