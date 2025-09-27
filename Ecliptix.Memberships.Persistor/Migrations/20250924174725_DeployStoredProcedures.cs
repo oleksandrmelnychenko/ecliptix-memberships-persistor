@@ -6,30 +6,37 @@ namespace Ecliptix.Memberships.Persistor.Migrations
 {
     public partial class DeployStoredProcedures : Migration
     {
+        private string GetScript(string relativePath)
+        {
+            var baseDir = AppContext.BaseDirectory;
+            var fullPath = Path.Combine(baseDir, "StoredProcedures", "Scripts", relativePath);
+            return File.ReadAllText(fullPath);
+        }
+        
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             // 1. UTILITIES
-            migrationBuilder.Sql(File.ReadAllText("StoredProcedures/Scripts/Utilities/SP_LogEvent.sql"));
+            migrationBuilder.Sql(GetScript(Path.Combine("Utilities", "SP_LogEvent.sql")));
 
             // 2. CORE
-            migrationBuilder.Sql(File.ReadAllText("StoredProcedures/Scripts/Core/SP_EnsureMobileNumber.sql"));
-            migrationBuilder.Sql(File.ReadAllText("StoredProcedures/Scripts/Core/SP_RegisterAppDevice.sql"));
+            migrationBuilder.Sql(GetScript(Path.Combine("Core", "SP_EnsureMobileNumber.sql")));
+            migrationBuilder.Sql(GetScript(Path.Combine("Core", "SP_RegisterAppDevice.sql")));
 
             // 3. MEMBERSHIP
-            migrationBuilder.Sql(File.ReadAllText("StoredProcedures/Scripts/Membership/SP_CreateMembership.sql"));
-            migrationBuilder.Sql(File.ReadAllText("StoredProcedures/Scripts/Membership/SP_LogLoginAttempt.sql"));
-            migrationBuilder.Sql(File.ReadAllText("StoredProcedures/Scripts/Membership/SP_LoginMembership.sql"));
+            migrationBuilder.Sql(GetScript(Path.Combine("Membership", "SP_CreateMembership.sql")));
+            migrationBuilder.Sql(GetScript(Path.Combine("Membership", "SP_LogLoginAttempt.sql")));
+            migrationBuilder.Sql(GetScript(Path.Combine("Membership", "SP_LoginMembership.sql")));
 
             // 4. VERIFICATION
-            migrationBuilder.Sql(File.ReadAllText("StoredProcedures/Scripts/Verification/SP_InitiateVerificationFlow.sql"));
-            migrationBuilder.Sql(File.ReadAllText("StoredProcedures/Scripts/Verification/SP_GenerateOtpCode.sql"));
-            migrationBuilder.Sql(File.ReadAllText("StoredProcedures/Scripts/Verification/SP_VerifyOtpCode.sql"));
-            migrationBuilder.Sql(File.ReadAllText("StoredProcedures/Scripts/Verification/SP_RequestResendOtpCode.sql"));
-            migrationBuilder.Sql(File.ReadAllText("StoredProcedures/Scripts/Verification/SP_UpdateVerificationFlowStatus.sql"));
-            migrationBuilder.Sql(File.ReadAllText("StoredProcedures/Scripts/Verification/SP_VerifyMobileForSecretKeyRecovery.sql"));
-            migrationBuilder.Sql(File.ReadAllText("StoredProcedures/Scripts/Verification/SP_GetMobileNumber.sql"));
-            migrationBuilder.Sql(File.ReadAllText("StoredProcedures/Scripts/Verification/SP_UpdateOtpStatus.sql"));
-            migrationBuilder.Sql(File.ReadAllText("StoredProcedures/Scripts/Verification/SP_ExpireAssociatedOtp.sql"));
+            migrationBuilder.Sql(GetScript(Path.Combine("Verification", "SP_InitiateVerificationFlow.sql")));
+            migrationBuilder.Sql(GetScript(Path.Combine("Verification", "SP_GenerateOtpCode.sql")));
+            migrationBuilder.Sql(GetScript(Path.Combine("Verification", "SP_VerifyOtpCode.sql")));
+            migrationBuilder.Sql(GetScript(Path.Combine("Verification", "SP_RequestResendOtpCode.sql")));
+            migrationBuilder.Sql(GetScript(Path.Combine("Verification", "SP_UpdateVerificationFlowStatus.sql")));
+            migrationBuilder.Sql(GetScript(Path.Combine("Verification", "SP_VerifyMobileForSecretKeyRecovery.sql")));
+            migrationBuilder.Sql(GetScript(Path.Combine("Verification", "SP_GetMobileNumber.sql")));
+            migrationBuilder.Sql(GetScript(Path.Combine("Verification", "SP_UpdateOtpStatus.sql")));
+            migrationBuilder.Sql(GetScript(Path.Combine("Verification", "SP_ExpireAssociatedOtp.sql")));
             
             // 5. FINAL LOG
             migrationBuilder.Sql(@"

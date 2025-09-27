@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Ecliptix.Memberships.Persistor.StoredProcedures.Services;
 
-public class AppDeviceService
+public class AppDeviceService : IAppDeviceService
 {
     private readonly IStoredProcedureExecutor _executor;
     private readonly ILogger<AppDeviceService> _logger;
