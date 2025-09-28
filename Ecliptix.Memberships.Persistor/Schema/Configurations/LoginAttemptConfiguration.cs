@@ -12,7 +12,7 @@ public class LoginAttemptConfiguration : EntityBaseMap<LoginAttempt>
         
         builder.ToTable("LoginAttempts");
 
-        builder.Property(e => e.MembershipId)
+        builder.Property(e => e.MembershipUniqueId)
             .IsRequired();
 
         builder.Property(e => e.MobileNumber)
@@ -40,8 +40,8 @@ public class LoginAttemptConfiguration : EntityBaseMap<LoginAttempt>
         builder.Property(e => e.AttemptedAt)
             .HasDefaultValueSql("GETUTCDATE()");
 
-        builder.HasIndex(e => e.MembershipId)
-            .HasDatabaseName("IX_LoginAttempts_MembershipId");
+        builder.HasIndex(e => e.MembershipUniqueId)
+            .HasDatabaseName("IX_LoginAttempts_MembershipUniqueId");
 
         builder.HasIndex(e => e.AttemptedAt)
             .IsDescending()
@@ -74,7 +74,7 @@ public class LoginAttemptConfiguration : EntityBaseMap<LoginAttempt>
 
         builder.HasOne(e => e.Membership)
             .WithMany(m => m.LoginAttempts)
-            .HasForeignKey(e => e.MembershipId)
+            .HasForeignKey(e => e.MembershipUniqueId)
             .HasPrincipalKey(m => m.UniqueId)
             .OnDelete(DeleteBehavior.Cascade)
             .HasConstraintName("FK_LoginAttempts_Memberships");

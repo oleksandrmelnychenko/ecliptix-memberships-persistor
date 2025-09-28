@@ -43,7 +43,6 @@ public class AppDeviceService : IAppDeviceService
                 DeviceRecordId = (long)outputParams[4].Value,
                 DeviceUniqueId = (Guid)outputParams[3].Value,
                 IsNewlyCreated = (bool)outputParams[5].Value
-                
             },
             cancellationToken);
     }
