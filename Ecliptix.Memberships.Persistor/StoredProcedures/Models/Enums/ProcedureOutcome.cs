@@ -8,6 +8,9 @@ public enum ProcedureOutcome
     Found,
 
     AlreadyExists,
+    ActiveFlowExists,
+    DeviceNotFound,
+    DeviceRateLimitExceeded,
     Error,
     EligibleForRecovery,
     FlowExpired,

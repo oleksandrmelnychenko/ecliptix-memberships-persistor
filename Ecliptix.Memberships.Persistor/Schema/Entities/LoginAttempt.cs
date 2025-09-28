@@ -1,11 +1,8 @@
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-
 namespace Ecliptix.Memberships.Persistor.Schema.Entities;
 
 public class LoginAttempt : EntityBase
 {
-    public Guid MembershipId { get; set; }
+    public Guid MembershipUniqueId { get; set; }
 
     public string? MobileNumber { get; set; }
 
@@ -25,6 +22,5 @@ public class LoginAttempt : EntityBase
 
     public DateTime? SuccessfulAt { get; set; }
 
-    [ForeignKey(nameof(MembershipId))]
-    public virtual Membership Membership { get; set; } = null!;
+    public virtual Membership? Membership { get; set; }
 }
