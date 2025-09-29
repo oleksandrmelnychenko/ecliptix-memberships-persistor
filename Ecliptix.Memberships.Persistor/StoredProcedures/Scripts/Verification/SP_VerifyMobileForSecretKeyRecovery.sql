@@ -36,7 +36,7 @@ BEGIN
 
         IF @MobileNumberUniqueId IS NULL
         BEGIN
-            SET @Outcome = 'mobile_not_found';
+            SET @Outcome = 'mobile_number_not_found';
             SET @ErrorMessage = 'Mobile number not found';
             ROLLBACK TRANSACTION;
             RETURN;
