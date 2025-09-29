@@ -27,4 +27,31 @@ public interface IVerificationService
         Guid flowUniqueId,
         string otpCode,
         CancellationToken cancellationToken = default);
+
+    Task<StoredProcedureResult<RequestResendOtpData>> RequestResendOtpCodeAsync(
+        Guid flowUniqueId,
+        CancellationToken cancellationToken = default);
+
+    Task<StoredProcedureResult<UpdateVerificationFlowStatusData>> UpdateVerificationFlowStatusAsync(
+        Guid flowUniqueId,
+        Models.Enums.VerificationFlowStatus status,
+        CancellationToken cancellationToken = default);
+
+    Task<StoredProcedureResult<VerifyMobileForSecretKeyRecoveryData>> VerifyMobileForSecretKeyRecoveryAsync(
+        string mobileNumber,
+        string? region,
+        CancellationToken cancellationToken = default);
+
+    Task<StoredProcedureResult<GetMobileNumberData>> GetMobileNumberAsync(
+        Guid phoneNumberIdentifier,
+        CancellationToken cancellationToken = default);
+
+    Task<StoredProcedureResult<Guid>> UpdateOtpStatusAsync(
+        Guid otpUniqueId,
+        Models.Enums.VerificationFlowStatus status,
+        CancellationToken cancellationToken = default);
+
+    Task<StoredProcedureResult<ExpireAssociatedOtpData>> ExpireAssociatedOtpAsync(
+        Guid flowUniqueId,
+        CancellationToken cancellationToken = default);
 }
