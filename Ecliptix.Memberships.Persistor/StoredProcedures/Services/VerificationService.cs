@@ -94,7 +94,7 @@ public class VerificationService : IVerificationService
             SqlParameterHelper.In("@FlowUniqueId", flowUniqueId),
             SqlParameterHelper.In("@OtpLength", otpLength),
             SqlParameterHelper.In("@ExpiryMinutes", expiryMinutes),
-            SqlParameterHelper.Out("@OtpCode", SqlDbType.UniqueIdentifier),
+            SqlParameterHelper.Out("@OtpCode", SqlDbType.NVarChar, 10),
             SqlParameterHelper.Out("@OtpUniqueId", SqlDbType.UniqueIdentifier),
             SqlParameterHelper.Out("@Outcome", SqlDbType.NVarChar, 50),
             SqlParameterHelper.Out("@ErrorMessage", SqlDbType.NVarChar, 500)
@@ -139,7 +139,7 @@ public class VerificationService : IVerificationService
                 string outcome = outputParams[3].Value?.ToString() ?? "invalid";
                 return new OtpVerificationData{
                     IsValid = (bool)outputParams[2].Value,
-                    VerifiedAt = outputParams[5].Value != DBNull.Value ? (DateTime?)outputParams[7].Value : null,
+                    VerifiedAt = outputParams[5].Value != DBNull.Value ? (DateTime?)outputParams[5].Value : null,
                     RemainingAttempts = outcome.Contains("attempts remaining") ? int.Parse(outcome.Split(" ")[0]) : 0
                 };
             },

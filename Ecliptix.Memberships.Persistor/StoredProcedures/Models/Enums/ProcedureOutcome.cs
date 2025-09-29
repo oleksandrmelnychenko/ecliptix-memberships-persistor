@@ -14,6 +14,7 @@ public enum ProcedureOutcome
     Error,
     EligibleForRecovery,
     FlowExpired,
+    FlowNotFound,
     Invalid,
     InvalidCode,
     MembershipNotFound,
@@ -23,6 +24,7 @@ public enum ProcedureOutcome
     NoData,
     NoActiveOtp,
     NoSecureKey,
+    OtpLimitExceeded,
     MobileNotFound,
     RateLimitExceeded,
     SqlError
