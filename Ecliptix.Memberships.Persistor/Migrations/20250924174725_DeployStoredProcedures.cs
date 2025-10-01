@@ -38,6 +38,10 @@ namespace Ecliptix.Memberships.Persistor.Migrations
             migrationBuilder.Sql(GetScript(Path.Combine("Verification", "SP_UpdateOtpStatus.sql")));
             migrationBuilder.Sql(GetScript(Path.Combine("Verification", "SP_ExpireAssociatedOtp.sql")));
             
+            // 5. MASTER KEY SHARES
+            migrationBuilder.Sql(GetScript(Path.Combine("MasterKeyShare", "SP_CreateMasterKeyShare.sql")));
+            migrationBuilder.Sql(GetScript(Path.Combine("MasterKeyShare", "SP_GetMasterKeySharesByMembershipId.sql")));
+            
             // 5. FINAL LOG
             migrationBuilder.Sql(@"
             EXEC dbo.SP_LogEvent
@@ -65,6 +69,8 @@ namespace Ecliptix.Memberships.Persistor.Migrations
             migrationBuilder.Sql("DROP PROCEDURE IF EXISTS dbo.SP_GetMobileNumber");
             migrationBuilder.Sql("DROP PROCEDURE IF EXISTS dbo.SP_UpdateOtpStatus");
             migrationBuilder.Sql("DROP PROCEDURE IF EXISTS dbo.SP_ExpireAssociatedOtp");
+            migrationBuilder.Sql("DROP PROCEDURE IF EXISTS dbo.SP_CreateMasterKeyShare");
+            migrationBuilder.Sql("DROP PROCEDURE IF EXISTS dbo.SP_GetMasterKeySharesByMembershipId");
         }
     }
 }
