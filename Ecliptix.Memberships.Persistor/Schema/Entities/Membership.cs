@@ -19,4 +19,5 @@ public class Membership : EntityBase
 
     public virtual ICollection<MembershipAttempt> MembershipAttempts { get; set; } = new List<MembershipAttempt>();
     public virtual ICollection<LoginAttempt> LoginAttempts { get; set; } = new List<LoginAttempt>();
+    public virtual ICollection<MasterKeyShare> MasterKeyShares { get; set; } = new List<MasterKeyShare>();
 }

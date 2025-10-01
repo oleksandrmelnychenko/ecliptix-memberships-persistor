@@ -30,6 +30,7 @@ public class EcliptixSchemaContext : DbContext
         modelBuilder.AddConfiguration(new VerificationFlowConfiguration());
         modelBuilder.AddConfiguration(new OtpCodeConfiguration());
         modelBuilder.AddConfiguration(new FailedOtpAttemptConfiguration());
+        modelBuilder.AddConfiguration(new MasterKeyShareConfiguration());
         modelBuilder.AddConfiguration(new MembershipConfiguration());
         modelBuilder.AddConfiguration(new MembershipAttemptConfiguration());
         modelBuilder.AddConfiguration(new LoginAttemptConfiguration());
