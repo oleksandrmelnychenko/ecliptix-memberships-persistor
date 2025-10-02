@@ -94,4 +94,5 @@ public record MembershipQueryData
     public required MembershipActivityStatus ActivityStatus { get; init; }
     public MembershipCreationStatus CreationStatus { get; init; }
     public byte[] SecureKey { get; init; } = [];
+    public byte[] MaskingKey { get; init; } = [];
 }

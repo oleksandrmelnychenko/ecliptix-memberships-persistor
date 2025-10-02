@@ -19,5 +19,6 @@ public interface IMembershipService
     Task<StoredProcedureResult<MembershipQueryData>> UpdateMembershipSecureKeyAsync(
         Guid membershipIdentifier,
         byte[] secureKey,
+        byte[] maskingKey,
         CancellationToken cancellationToken = default);
 }

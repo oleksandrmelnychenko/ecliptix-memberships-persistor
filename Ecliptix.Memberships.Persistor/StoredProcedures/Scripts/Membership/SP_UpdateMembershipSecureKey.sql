@@ -9,6 +9,7 @@
 CREATE OR ALTER PROCEDURE dbo.SP_UpdateMembershipSecureKey
     @MembershipUniqueId UNIQUEIDENTIFIER,
     @SecureKey VARBINARY(MAX),
+    @MaskingKey VARBINARY(32),
     @Outcome NVARCHAR(100) OUTPUT,
     @ErrorMessage NVARCHAR(500) OUTPUT,
     @Status NVARCHAR(20) OUTPUT,
@@ -35,6 +36,14 @@ ROLLBACK TRANSACTION;
 RETURN;
 END
 
+        IF @MaskingKey IS NULL OR DATALENGTH(@MaskingKey) != 32
+BEGIN
+            SET @Outcome = 'invalid_masking_key';
+            SET @ErrorMessage = 'Masking key must be exactly 32 bytes';
+ROLLBACK TRANSACTION;
+RETURN;
+END
+
 SELECT @MobileNumberId = MobileNumberId
 FROM dbo.Memberships
 WHERE UniqueId = @MembershipUniqueId AND IsDeleted = 0;
@@ -49,6 +58,7 @@ END
 
 UPDATE dbo.Memberships
 SET SecureKey = @SecureKey,
+    MaskingKey = @MaskingKey,
     Status = 'active',
     CreationStatus = 'secure_key_set'
 WHERE UniqueId = @MembershipUniqueId;

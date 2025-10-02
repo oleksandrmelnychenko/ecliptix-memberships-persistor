@@ -12,6 +12,7 @@ CREATE OR ALTER PROCEDURE dbo.SP_LoginMembership
     @Status NVARCHAR(20) OUTPUT,
     @Outcome NVARCHAR(500) OUTPUT,
     @SecureKey VARBINARY(MAX) OUTPUT,
+    @MaskingKey VARBINARY(32) OUTPUT,
     @ErrorMessage NVARCHAR(500) OUTPUT
 AS
 BEGIN
@@ -33,6 +34,7 @@ BEGIN
     SET @Status = NULL;
     SET @Outcome = NULL;
     SET @SecureKey = NULL;
+    SET @MaskingKey = NULL;
     SET @ErrorMessage = NULL;
 
     BEGIN TRY
@@ -96,6 +98,7 @@ BEGIN
             BEGIN
                 SELECT TOP 1 @MembershipUniqueId = UniqueId,
                             @SecureKey = SecureKey,
+                            @MaskingKey = MaskingKey,
                             @Status = Status,
                             @CreationStatus = CreationStatus
                 FROM dbo.Memberships
@@ -128,6 +131,7 @@ BEGIN
             SET @MembershipUniqueId = NULL;
             SET @Status = NULL;
             SET @SecureKey = NULL;
+            SET @MaskingKey = NULL;
         END
     END TRY
     BEGIN CATCH

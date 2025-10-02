@@ -71,6 +71,7 @@ public class MembershipService : IMembershipService
             SqlParameterHelper.Out("@MembershipUniqueId", SqlDbType.UniqueIdentifier),
             SqlParameterHelper.Out("@Status", SqlDbType.NVarChar, 20),
             SqlParameterHelper.Out("@SecureKey", SqlDbType.VarBinary, -1),
+            SqlParameterHelper.Out("@MaskingKey", SqlDbType.VarBinary, 32),
             SqlParameterHelper.Out("@Outcome", SqlDbType.NVarChar, 100),
             SqlParameterHelper.Out("@ErrorMessage", SqlDbType.NVarChar, 500)
         ];
@@ -85,11 +86,12 @@ public class MembershipService : IMembershipService
                 {
                     UniqueIdentifier = (Guid)outputParams[1].Value,
                     ActivityStatus = ProcedureResultMapper.ToActivityStatus(activity, _logger),
-                    SecureKey = outputParams[3].Value as byte[] ?? []
+                    SecureKey = outputParams[3].Value as byte[] ?? [],
+                    MaskingKey = outputParams[4].Value as byte[] ?? []
                 };
             },
-            outcomeIndex: 4,
-            errorIndex: 5,
+            outcomeIndex: 5,
+            errorIndex: 6,
             cancellationToken
         );
     }
@@ -97,17 +99,18 @@ public class MembershipService : IMembershipService
     public async Task<StoredProcedureResult<MembershipQueryData>> UpdateMembershipSecureKeyAsync(
         Guid membershipUniqueId,
         byte[] secretKey,
+        byte[] maskingKey,
         CancellationToken cancellationToken = default)
     {
         SqlParameter[] parameters =
         [
             SqlParameterHelper.In("@MembershipUniqueId", membershipUniqueId),
             SqlParameterHelper.In("@SecureKey", secretKey),
-            SqlParameterHelper.Out("@MembershipUniqueId", SqlDbType.UniqueIdentifier),
-            SqlParameterHelper.Out("@Status", SqlDbType.NVarChar, 50),
-            SqlParameterHelper.Out("@CreationStatus", SqlDbType.NVarChar, 50),
+            SqlParameterHelper.In("@MaskingKey", maskingKey),
             SqlParameterHelper.Out("@Outcome", SqlDbType.NVarChar, 100),
-            SqlParameterHelper.Out("@ErrorMessage", SqlDbType.NVarChar, 500)
+            SqlParameterHelper.Out("@ErrorMessage", SqlDbType.NVarChar, 500),
+            SqlParameterHelper.Out("@Status", SqlDbType.NVarChar, 50),
+            SqlParameterHelper.Out("@CreationStatus", SqlDbType.NVarChar, 50)
         ];
 
         return await _executor.ExecuteWithOutcomeAsync(
@@ -115,18 +118,18 @@ public class MembershipService : IMembershipService
             parameters,
             outputParams =>
             {
-                string? status = outputParams[3].Value?.ToString();
-                string? creationStatus = outputParams[4].Value?.ToString();
-                
+                string? status = outputParams[5].Value?.ToString();
+                string? creationStatus = outputParams[6].Value?.ToString();
+
                 return new MembershipQueryData
                 {
-                    UniqueIdentifier = (Guid)outputParams[2].Value,
+                    UniqueIdentifier = membershipUniqueId,
                     ActivityStatus = ProcedureResultMapper.ToActivityStatus(status, _logger),
                     CreationStatus = ProcedureResultMapper.ToCreationStatus(creationStatus, _logger),
                 };
             },
-            outcomeIndex: 5,
-            errorIndex: 6,
+            outcomeIndex: 3,
+            errorIndex: 4,
             cancellationToken
         );
     }
