@@ -8,21 +8,17 @@
 
 CREATE OR ALTER PROCEDURE dbo.SP_VerifyMobileForSecretKeyRecovery
     @MobileNumber NVARCHAR(18),
-    @Region NVARCHAR(2) = NULL,
-    @MobileNumberUniqueId UNIQUEIDENTIFIER OUTPUT,
-    @Outcome NVARCHAR(50) OUTPUT,
-    @ErrorMessage NVARCHAR(500) OUTPUT
+    @Region NVARCHAR(2) = NULL
 AS
 BEGIN
     SET NOCOUNT ON;
 
+    DECLARE @MobileNumberUniqueId UNIQUEIDENTIFIER;
+    DECLARE @Outcome NVARCHAR(50) = 'invalid';
+    DECLARE @Success BIT = 0;
     DECLARE @HasSecureKey BIT = 0;
     DECLARE @MembershipStatus NVARCHAR(20);
     DECLARE @CreationStatus NVARCHAR(20);
-
-    SET @MobileNumberUniqueId = NULL;
-    SET @Outcome = 'invalid';
-    SET @ErrorMessage = NULL;
 
     BEGIN TRY
         BEGIN TRANSACTION;
@@ -37,8 +33,8 @@ BEGIN
         IF @MobileNumberUniqueId IS NULL
         BEGIN
             SET @Outcome = 'mobile_not_found';
-            SET @ErrorMessage = 'Mobile number not found';
             ROLLBACK TRANSACTION;
+            SELECT @MobileNumberUniqueId AS MobileNumberUniqueId, @Outcome AS Outcome, @Success AS Success;
             RETURN;
         END
 
@@ -55,8 +51,8 @@ BEGIN
         IF @MembershipStatus IS NULL
         BEGIN
             SET @Outcome = 'membership_not_found';
-            SET @ErrorMessage = 'No membership found for this mobile number';
             ROLLBACK TRANSACTION;
+            SELECT @MobileNumberUniqueId AS MobileNumberUniqueId, @Outcome AS Outcome, @Success AS Success;
             RETURN;
         END
 
@@ -64,8 +60,8 @@ BEGIN
         IF @HasSecureKey = 0
         BEGIN
             SET @Outcome = 'no_secure_key';
-            SET @ErrorMessage = 'No secure key found for this membership';
             ROLLBACK TRANSACTION;
+            SELECT @MobileNumberUniqueId AS MobileNumberUniqueId, @Outcome AS Outcome, @Success AS Success;
             RETURN;
         END
 
@@ -73,29 +69,39 @@ BEGIN
         IF @MembershipStatus = 'blocked'
         BEGIN
             SET @Outcome = 'membership_blocked';
-            SET @ErrorMessage = 'Membership is blocked';
             ROLLBACK TRANSACTION;
+            SELECT @MobileNumberUniqueId AS MobileNumberUniqueId, @Outcome AS Outcome, @Success AS Success;
             RETURN;
         END
 
         -- 5. Success
         SET @Outcome = 'eligible_for_recovery';
+        SET @Success = 1;
 
         COMMIT TRANSACTION;
+
+        -- Return success result
+        SELECT @MobileNumberUniqueId AS MobileNumberUniqueId, @Outcome AS Outcome, @Success AS Success;
+
     END TRY
     BEGIN CATCH
         IF @@TRANCOUNT > 0
             ROLLBACK TRANSACTION;
 
+        DECLARE @ErrorMessage NVARCHAR(4000) = ERROR_MESSAGE();
         SET @Outcome = 'error';
-        SET @ErrorMessage = ERROR_MESSAGE();
 
         -- Log the error
         EXEC dbo.SP_LogEvent
             @EventType = 'secret_key_recovery_error',
             @Severity = 'error',
             @Message = 'Error during secret key recovery eligibility check',
-            @Details = @ErrorMessage;
+            @Details = @ErrorMessage
+
+        -- Return error result
+        SELECT CAST(CAST(0 AS BINARY(16)) AS UNIQUEIDENTIFIER) AS MobileNumberUniqueId,
+               @Outcome AS Outcome,
+               @Success AS Success;
 
         RAISERROR (@ErrorMessage, 16, 1);
     END CATCH

@@ -7,21 +7,13 @@
 -- ============================================================================
 
 CREATE OR ALTER PROCEDURE dbo.SP_GetMobileNumber
-    @MobileNumberIdentifier UNIQUEIDENTIFIER,
-    @MobileNumber NVARCHAR(18) OUTPUT,
-    @Region NVARCHAR(2) OUTPUT,
-    @MobileNumberUniqueId UNIQUEIDENTIFIER OUTPUT,
-    @Outcome NVARCHAR(50) OUTPUT,
-    @ErrorMessage NVARCHAR(500) OUTPUT
+    @MobileUniqueId UNIQUEIDENTIFIER
 AS
 BEGIN
     SET NOCOUNT ON;
 
-    SET @MobileNumber = NULL;
-    SET @Region = NULL;
-    SET @MobileNumberUniqueId = NULL;
-    SET @Outcome = 'invalid';
-    SET @ErrorMessage = NULL;
+    DECLARE @MobileNumber NVARCHAR(18);
+    DECLARE @Region NVARCHAR(2);
 
     BEGIN TRY
         BEGIN TRANSACTION;
@@ -29,37 +21,48 @@ BEGIN
         -- 1. Get Mobile number record
         SELECT TOP 1
             @MobileNumber = Number,
-            @Region = Region,
-            @MobileNumberUniqueId = UniqueId
+            @Region = Region
         FROM dbo.MobileNumbers
-        WHERE UniqueId = @MobileNumberIdentifier
+        WHERE UniqueId = @MobileUniqueId
           AND IsDeleted = 0;
 
         IF @MobileNumber IS NULL
         BEGIN
-            SET @Outcome = 'not_found';
-            SET @ErrorMessage = 'Mobile number not found for the given identifier';
             ROLLBACK TRANSACTION;
+            SELECT
+                CAST(NULL AS NVARCHAR(18)) AS MobileNumber,
+                CAST(NULL AS NVARCHAR(2)) AS Region,
+                @MobileUniqueId AS UniqueId;
             RETURN;
         END
 
-        SET @Outcome = 'found';
-
         COMMIT TRANSACTION;
+
+        -- Return found result
+        SELECT
+            @MobileNumber AS MobileNumber,
+            @Region AS Region,
+            @MobileUniqueId AS UniqueId;
+
     END TRY
     BEGIN CATCH
         IF @@TRANCOUNT > 0
             ROLLBACK TRANSACTION;
 
-        SET @Outcome = 'error';
-        SET @ErrorMessage = ERROR_MESSAGE();
+        DECLARE @ErrorMessage NVARCHAR(500) = ERROR_MESSAGE();
 
         -- Log the error
         EXEC dbo.SP_LogEvent
             @EventType = 'get_mobile_number_error',
             @Severity = 'error',
             @Message = 'Error during mobile number retrieval',
-            @Details = @ErrorMessage;
+            @Details = @ErrorMessage
+
+        -- Return error result
+        SELECT
+            CAST(NULL AS NVARCHAR(18)) AS MobileNumber,
+            CAST(NULL AS NVARCHAR(2)) AS Region,
+            CAST(CAST(0 AS BINARY(16)) AS UNIQUEIDENTIFIER) AS UniqueId;
 
         RAISERROR (@ErrorMessage, 16, 1);
     END CATCH
